@@ -28,11 +28,11 @@ const choices = order.filter((name) => name !== last);
 apply(choices[Math.floor(Math.random() * choices.length)]);
 
 // Each switch is a new print run: the page cuts straight to the next colour, and the second
-// plate (the ring colour, under the headline, logo, target core and dots) lands a few pixels out of
-// register. The offsets add up, so the print drifts a little further with every switch. It wanders
-// within a cap rather than running off the page.
-const STEP = 3;   // px of drift per switch
-const LIMIT = 16; // px; the furthest the plate drifts from true
+// plate (the ring colour, under the headline, logo and target core) is knocked a little further
+// out of register, on top of the offset clock.js sets from the time. The knocks add up, within a
+// cap. Values are in the same units as the clock's (site.css turns them into pixels).
+const STEP = 3;
+const LIMIT = 12;
 let mx = 0, my = 0;
 
 function knock() {
@@ -41,18 +41,8 @@ function knock() {
   my += Math.sin(angle) * STEP;
   const far = Math.hypot(mx, my);
   if (far > LIMIT) { mx *= LIMIT / far; my *= LIMIT / far; }
-  root.style.setProperty("--mx", `${mx.toFixed(1)}px`);
-  root.style.setProperty("--my", `${my.toFixed(1)}px`);
-}
-
-// Every visit opens already off register, by 5 to 10px in a random direction.
-{
-  const angle = Math.random() * Math.PI * 2;
-  const far = 5 + Math.random() * 5;
-  mx = Math.cos(angle) * far;
-  my = Math.sin(angle) * far;
-  root.style.setProperty("--mx", `${mx.toFixed(1)}px`);
-  root.style.setProperty("--my", `${my.toFixed(1)}px`);
+  root.style.setProperty("--mx", mx.toFixed(1));
+  root.style.setProperty("--my", my.toFixed(1));
 }
 
 function reprint() {

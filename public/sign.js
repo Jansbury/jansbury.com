@@ -1,6 +1,6 @@
-// The signature line, bottom right. At rest it is a short line made of dots packed together.
-// Hover it (or tap, or focus and press Enter) and the dots rise into dot-matrix letters,
-// in the same 5x7 grid as the clock: "instagram" and "kick". Move away and they fall back into the line.
+// The signature line, under the handwritten logo. At rest it is a short line made of dots packed
+// together. Hover it (or tap, or focus and press Enter) and the dots drop into dot-matrix letters
+// beneath it, in the same 5x7 grid as the clock. Move away and they climb back into the line.
 //
 // The addresses are not in the HTML and not readable in this file: each is reversed and base64 encoded,
 // and the href is only set the first time a person opens the line. Scrapers that read the source, or run
@@ -8,24 +8,21 @@
 // determined, since any visitor can open the line.
 const SOCIALS = [
   ["instagram", "eXJ1YnNuYWovbW9jLm1hcmdhdHNuaS53d3cvLzpzcHR0aA=="],
-  ["kick", "eF9zbmFqL21vYy5rY2lrLy86c3B0dGg="],
 ];
 
 const GLYPHS = {
   a: "00000 00000 01110 00001 01111 10001 01111",
-  c: "00000 00000 01110 10000 10000 10001 01110",
   g: "00000 01111 10001 10001 01111 00001 01110",
   i: "00100 00000 01100 00100 00100 00100 01110",
-  k: "10000 10000 10010 10100 11000 10100 10010",
   m: "00000 00000 11010 10101 10101 10001 10001",
   n: "00000 00000 10110 11001 10001 10001 10001",
   r: "00000 00000 10110 11001 10000 10000 10000",
   s: "00000 00000 01110 10000 01110 00001 11110",
   t: "01000 01000 11100 01000 01000 01001 00110",
 };
-const WORD_GAP = 7;   // empty columns between the two names
-const LINE_COLS = 24; // length of the resting line, in cells
-const LINE_ROW = 9;   // the line sits two rows under the letters
+const WORD_GAP = 7;   // empty columns between names
+const LINE_COLS = 32; // length of the resting line, in cells
+const DROP = 3;       // rows from the line down to the top of the letters
 
 const sign = document.querySelector("[data-sign]");
 const toggle = sign?.querySelector(".sign__line");
@@ -33,7 +30,7 @@ const toggle = sign?.querySelector(".sign__line");
 function letterDots(word) {
   const dots = [];
   [...word].forEach((ch, n) => {
-    GLYPHS[ch].replace(/ /g, "").split("").forEach((bit, i) => {
+    [...GLYPHS[ch].replace(/ /g, "")].forEach((bit, i) => {
       if (bit === "1") dots.push([n * 6 + (i % 5), Math.floor(i / 5)]);
     });
   });
@@ -46,8 +43,9 @@ const count = words.reduce((sum, w) => sum + w.dots.length, 0);
 const links = [];
 
 if (sign) {
-  sign.style.setProperty("--cols", total);
+  sign.style.setProperty("--cols", Math.max(total, LINE_COLS));
   sign.style.setProperty("--line", LINE_COLS);
+  sign.style.setProperty("--drop", DROP);
   let start = 0;
   let k = 0;
   words.forEach((w) => {
@@ -60,11 +58,11 @@ if (sign) {
     a.style.setProperty("--at", start);
     a.style.setProperty("--w", w.cols);
     // Each dot knows its place in the letter (x, y) and its place packed into the line (rx, ry),
-    // both relative to its word, in cells.
+    // both relative to its word, in cells. The line is DROP rows above the letters.
     w.dots.forEach(([x, y]) => {
       const b = document.createElement("b");
-      const rx = total - LINE_COLS + (k / (count - 1)) * (LINE_COLS - 1) - start;
-      b.style.cssText = `--x:${x};--y:${y};--rx:${rx.toFixed(2)};--ry:${LINE_ROW};--d:${start + x}`;
+      const rx = (k / (count - 1)) * (LINE_COLS - 1) - start;
+      b.style.cssText = `--x:${x};--y:${y};--rx:${rx.toFixed(2)};--ry:${-DROP};--d:${start + x}`;
       a.append(b);
       k++;
     });

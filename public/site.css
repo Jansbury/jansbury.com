@@ -31,8 +31,6 @@
   --tg: clamp(6rem, min(17vw, 34svh), 22rem);
   --t: 240ms;
   --ease: cubic-bezier(.2, .7, .2, 1);
-  --px: 0;
-  --py: 0;
 
   /* Palette roles; palette.js picks one at random on each load */
   --field: var(--orange);
@@ -84,7 +82,6 @@ a { color: inherit; }
 .logo-link { display: block; color: var(--ink); }
 .logo { display: block; width: clamp(9rem, 16vw, 19rem); height: auto; }
 .rule { display: block; background: var(--ink); }
-.rule--brand { width: clamp(4rem, 9vw, 9rem); height: var(--hair); }
 /* Auckland time, bottom right: large serif digits that cut over each minute */
 .time {
   position: absolute; z-index: 2;
@@ -153,24 +150,25 @@ a { color: inherit; }
   .blurb:has(a:hover) a:not(:hover) { color: inherit; }
 }
 
-/* The signature line (sign.js): a short line of packed dots that rise into dot-matrix names.
-   Every size is in cells of --p, the dot pitch. */
+/* The signature line (sign.js), under the logo: a short line of packed dots that drop into
+   dot-matrix names beneath it. Every size is in cells of --p, the dot pitch. */
 .sign {
   --p: clamp(3px, .28vw, 5px);
-  position: absolute; z-index: 3;
-  right: var(--gutter); bottom: calc(var(--gutter) - var(--p) / 2);
-  width: calc(var(--cols) * var(--p)); height: calc(10 * var(--p));
-  pointer-events: none;
+  position: relative; z-index: 3;
+  width: calc(var(--line) * var(--p)); height: var(--p);
 }
-.sign.is-open { pointer-events: auto; }
+/* While open, an invisible pad joins the line to the names so the pointer can travel between them */
+.sign.is-open::before {
+  content: ""; position: absolute; left: 0; top: 0;
+  width: calc(var(--cols) * var(--p)); height: calc((var(--drop) + 8) * var(--p));
+}
 .sign__line {
-  position: absolute; right: 0; top: calc(9.5 * var(--p) - 22px);
-  width: calc(var(--line) * var(--p)); height: 44px;
+  position: absolute; left: 0; top: calc(var(--p) / 2 - 22px);
+  width: 100%; height: 44px;
   padding: 0; border: 0; background: none; cursor: pointer;
-  pointer-events: auto;
 }
 .sign__word {
-  position: absolute; top: 0; left: calc(var(--at) * var(--p));
+  position: absolute; top: calc(var(--drop) * var(--p)); left: calc(var(--at) * var(--p));
   width: calc(var(--w) * var(--p)); height: calc(7 * var(--p));
   pointer-events: none;
 }
@@ -185,29 +183,23 @@ a { color: inherit; }
 }
 .is-open .sign__word b { translate: calc(var(--x) * var(--p)) calc(var(--y) * var(--p)); scale: .85; }
 .is-open .sign__word:hover b, .is-open .sign__word:focus-visible b { scale: 1.1; }
-
-/* Make room above the line for the names */
-@media (min-width: 761px), (orientation: landscape) { .poster:has(.sign) .time { bottom: calc(var(--gutter) + 3.5rem); } }
-@media (prefers-reduced-motion: no-preference) {
-  .sign { animation: cut-in 1ms both 1180ms; }
-}
 @media (prefers-reduced-motion: reduce) {
   .sign__word b { transition: none; }
 }
 
-/* ---------- Screen-print registration (palette.js) ----------
-   The second plate prints in the ring colour under the ink, offset by --mx/--my,
-   which drift a little further with every palette switch. */
-/* The plate also follows the pointer (or a swipe, or the tilt of a phone): parallax.js sets
-   --px/--py from -1 to 1, and the plate slides up to 10px under the still ink. */
+/* ---------- Screen-print registration ----------
+   The second plate prints in the ring colour under the ink, off register.
+   clock.js sets --tx/--ty from the visitor's distance from Auckland and the time there;
+   palette.js adds --mx/--my, a knock for every palette switch.
+   Both are in plate units; --u turns a unit into pixels for this screen. */
 :root {
-  --mx: 0px; --my: 0px;
-  --ox: calc(var(--mx) + var(--px) * 10px);
-  --oy: calc(var(--my) + var(--py) * 10px);
+  --tx: 0; --ty: 0; --mx: 0; --my: 0;
+  --u: clamp(.5px, .07vw, 1.2px);
+  --ox: calc((var(--tx) + var(--mx)) * var(--u));
+  --oy: calc((var(--ty) + var(--my)) * var(--u));
 }
 .line { text-shadow: var(--ox) var(--oy) 0 var(--ring); }
 .logo { filter: drop-shadow(var(--ox) var(--oy) 0 var(--ring)); }
-.pips b, .dots b, .dm b.on { box-shadow: var(--ox) var(--oy) 0 var(--ring); }
 
 /* ---------- Composition, after the mrrbt sleeve ---------- */
 .deco > * { position: absolute; display: block; margin: 0; pointer-events: none; }
@@ -230,9 +222,7 @@ a { color: inherit; }
   width: var(--tg); aspect-ratio: 1; border-radius: 50%;
   right: 24%; top: 26%;
   /* The core is its own plate, so it drifts off centre with the misregistration */
-  /* and it rolls further than the type plate as the pointer moves, like a loose disc in the ring */
-  background: radial-gradient(circle at calc(50% + var(--mx) + var(--px) * var(--tg) * .09)
-      calc(50% + var(--my) + var(--py) * var(--tg) * .09),
+  background: radial-gradient(circle at calc(50% + var(--ox) * 1.5) calc(50% + var(--oy) * 1.5),
     var(--core) 0 calc(var(--tg) * .311), var(--ring) 0);
 }
 /* The target is also Auckland's clock face (clock.js sets --hr and --mn) */
@@ -250,14 +240,6 @@ a { color: inherit; }
 .hand--h { height: 24%; rotate: var(--hr, 0deg); }
 .hand--m { height: 37%; rotate: var(--mn, 0deg); }
 
-.vert {
-  right: calc(24% + var(--tg) / 2 - .5ch);
-  top: calc(26% + var(--tg) + 2.5rem);
-  writing-mode: vertical-rl; text-orientation: upright;
-  font-family: var(--sans); font-weight: 400;
-  font-size: clamp(.8rem, .7rem + .4vw, 1.2rem);
-  letter-spacing: .6em;
-}
 
 /* Dot grid: hover (or tap) and only the dots that spell "Hi" stay */
 .dots {
@@ -277,6 +259,7 @@ a { color: inherit; }
 
 /* The vertical rule is a day bar: dashed track, solid fill up to now in Auckland */
 .rule--v {
+  position: absolute; pointer-events: none; /* only the handle inside takes input */
   width: var(--hair); height: 52%; right: calc(var(--gutter) + .4vw); top: 24%;
   background: repeating-linear-gradient(to bottom, var(--ink) 0 2px, transparent 2px 7px);
 }
@@ -311,14 +294,14 @@ html.is-scrubbing .rule--v::after { left: -9px; width: 19px; }
   .logo { animation: write 1100ms cubic-bezier(.5, .1, .35, 1) both 60ms; }
   body::after { animation: breathe 1.2s steps(3, end) infinite; transition: opacity 600ms var(--ease); }
   html { transition: --ink 600ms var(--ease); }
-  .rule--brand { animation: draw-x 240ms steps(6, end) both 180ms; transform-origin: 0 50%; }
+  .sign { animation: cut-in 1ms both 180ms; }
   .l--1 { animation: wipe 220ms steps(5, end) both 340ms; }
   .l--2 { animation: wipe 220ms steps(5, end) both 520ms; }
   .l--3 { animation: wipe 220ms steps(5, end) both 700ms; }
   .blurb { animation: cut-in 1ms both 860ms; }
   .target { animation: cut-in 1ms both 900ms; }
   .rule--v { animation: draw-y 280ms steps(7, end) both 960ms; transform-origin: 50% 0; }
-  .vert, .pips, .time { animation: cut-in 1ms both 1080ms; }
+  .pips, .time { animation: cut-in 1ms both 1080ms; }
   .dots { animation: cut-in 1ms both 1180ms; }
 }
 @keyframes cut-in { from { visibility: hidden; } }
@@ -343,13 +326,11 @@ html.is-scrubbing .rule--v::after { left: -9px; width: 19px; }
   .poster { --tg: min(44vw, 30svh); --top: calc(var(--gutter) + 5rem); }
   .line { font-size: 12.6vw; }
   .l--2 { padding-left: .5em; }
-  .copy { margin-top: calc(var(--tg) + 12.1rem); }
+  .copy { margin-top: calc(var(--tg) + 9.1rem); }
   .target { right: 8%; top: var(--top); }
-  .vert { display: none; }
   .dots { right: auto; left: var(--gutter); top: calc(var(--top) + var(--tg) * .2); width: 4.6rem; }
   .rule--v { top: calc(var(--top) - 1rem); height: calc(var(--tg) + 9rem); }
   .time { right: calc(var(--gutter) + 1rem); bottom: auto; top: calc(var(--top) + var(--tg) + 1rem); }
-  .sign { bottom: auto; top: calc(var(--top) + var(--tg) + 7.6rem); right: calc(var(--gutter) + 1rem); }
 }
 
 /* Phones on their side: the target and dots move up into the empty top band, clear of the clock */
@@ -364,9 +345,6 @@ html.is-scrubbing .rule--v::after { left: -9px; width: 19px; }
   .poster { --tg: min(30vw, 24svh); }
   .line { font-size: min(11.5vw, 12rem); }
 }
-
-/* Short screens: the vertical name would run into the headline */
-@media (max-height: 760px) { .vert { display: none; } }
 
 @media (min-width: 1800px) { html { font-size: 125%; } }
 
