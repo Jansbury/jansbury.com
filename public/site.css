@@ -139,11 +139,19 @@ a { color: inherit; }
   font-family: var(--sans); font-size: clamp(1.05rem, .9rem + .55vw, 1.6rem); line-height: 1.4;
   text-wrap: pretty;
 }
+.blurb { transition: color var(--t) var(--ease); }
 .blurb a {
+  color: var(--ink); /* its own colour, so it holds when the sentence fades */
+  transition: color var(--t) var(--ease);
   text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: .2em;
-  transition: color var(--t) var(--ease), background-color var(--t) var(--ease);
 }
-.blurb a:hover, .blurb a:focus-visible { background: var(--ink); color: var(--field); text-decoration-color: transparent; }
+/* Pointing at a link doesn't highlight it: everything else in the sentence steps back instead */
+.blurb:has(a:focus-visible) { color: color-mix(in srgb, var(--ink) 30%, var(--field)); }
+.blurb:has(a:focus-visible) a:not(:focus-visible) { color: inherit; }
+@media (hover: hover) {
+  .blurb:has(a:hover) { color: color-mix(in srgb, var(--ink) 30%, var(--field)); }
+  .blurb:has(a:hover) a:not(:hover) { color: inherit; }
+}
 
 /* The signature line (sign.js): a short line of packed dots that rise into dot-matrix names.
    Every size is in cells of --p, the dot pitch. */
