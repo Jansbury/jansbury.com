@@ -50,7 +50,7 @@ function knock() {
 // lower case in the capitals (the s in "UIs").
 const LINES = [
   ["designs", "UI_s_ *&* UX flows"],
-  ["builds", "Software"],
+  ["builds", "Software *&* tools"],
   ["solves", "Hard problems"],
   ["automates", "The boring bits"],
   ["makes", "Stuff *&* things"],

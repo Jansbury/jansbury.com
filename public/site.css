@@ -324,7 +324,7 @@ html.is-scrubbing .rule--v::after { left: -9px; width: 19px; }
    (the page scrolls a little on the smallest instead). ---------- */
 @media (max-width: 760px) and (orientation: portrait) {
   .poster { --tg: min(44vw, 30svh); --top: calc(var(--gutter) + 5rem); }
-  .line { font-size: 12.6vw; }
+  .line { font-size: 11.8vw; } /* the longest headline, "Software & tools", just fits at this size */
   .l--2 { padding-left: .5em; }
   .copy { margin-top: calc(var(--tg) + 9.1rem); }
   .target { right: 8%; top: var(--top); }
