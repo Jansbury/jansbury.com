@@ -68,8 +68,8 @@ a { color: inherit; }
 ::selection { background: var(--ink); color: var(--field); }
 :focus-visible { outline: 2px solid var(--ink); outline-offset: 6px; }
 
-/* ---------- The poster ---------- */
-.poster {
+/* ---------- Home ---------- */
+.home {
   position: relative;
   min-height: 100svh;
   display: grid;
@@ -343,7 +343,7 @@ html.is-scrubbing .rule--v::after { left: -9px; width: 19px; }
    in fixed steps, and the copy keeps clear of them, so nothing collides on short phones
    (the page scrolls a little on the smallest instead). ---------- */
 @media (max-width: 760px) and (orientation: portrait) {
-  .poster { --tg: min(44vw, 30svh); --top: calc(var(--gutter) + 5rem); }
+  .home { --tg: min(44vw, 30svh); --top: calc(var(--gutter) + 5rem); }
   .line { font-size: 11.8vw; } /* the longest headline, "Software & tools", just fits at this size */
   .l--2 { padding-left: .5em; }
   .copy { margin-top: calc(var(--tg) + 9.1rem); }
@@ -356,24 +356,25 @@ html.is-scrubbing .rule--v::after { left: -9px; width: 19px; }
 
 /* Phones on their side: the target and dots move up into the empty top band, clear of the clock */
 @media (max-height: 500px) and (orientation: landscape) {
-  .poster { --tg: min(17vw, 28svh); }
+  .home { --tg: min(17vw, 28svh); }
   .line { font-size: min(7.4vw, 17svh); } /* the longest line stops short of the clock */
   .target { top: var(--gutter); right: calc(var(--gutter) + 8rem); }
   .dots { top: var(--gutter); right: calc(var(--gutter) + 10rem + var(--tg)); width: 3rem; }
 }
 
-/* Upright tablets and other tall windows: a poster. The target becomes the centrepiece, large
-   in the middle of the page, with the dots beside it on the left, the clock tucked under its
-   right edge and the headline along the bottom. The hanging city name goes.
+/* Upright tablets and other tall windows: the same arrangement, with the headline set larger
+   and stacked into four lines so it fills the width. The target moves up to make room,
+   and the hanging city name goes, as on phones.
    Only where the window is clearly taller than wide: nearer square there isn't the height. */
 @media (min-width: 761px) and (max-width: 1100px) and (max-aspect-ratio: 9/10) {
-  .poster { --tg: min(56vw, 40svh); --top: 16%; --side: 11%; }
-  .line { font-size: min(9.6vw, 12svh); }
-  .target { top: var(--top); right: var(--side); }
+  .home { --tg: min(46vw, 30svh); --top: 12%; }
+  .line { font-size: min(15.5vw, 10.5svh); }
+  .line [data-does] { display: block; width: fit-content; margin-left: .5em; }
+  .l--2 { padding-left: .5em; text-indent: -.5em; max-width: 5.2em; text-wrap: balance; } /* always two lines, the second indented */
+  .target { top: var(--top); right: 12%; }
   .vert { display: none; }
-  .dots { right: auto; left: var(--gutter); top: calc(var(--top) + var(--tg) * .42); }
-  .time { bottom: auto; top: calc(var(--top) + var(--tg) + 1.75rem); right: var(--side); }
-  .rule--v { top: var(--top); height: calc(var(--tg) + 9rem); }
+  .dots { top: calc(var(--top) + var(--tg) * .62); right: var(--gutter); }
+  .rule--v { top: var(--top); }
 }
 
 /* Short screens: the hanging city name would run into the headline */
