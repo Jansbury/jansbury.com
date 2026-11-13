@@ -336,14 +336,23 @@ html.is-scrubbing .rule--v::after { left: -9px; width: 19px; }
 /* Phones on their side: the target and dots move up into the empty top band, clear of the clock */
 @media (max-height: 500px) and (orientation: landscape) {
   .poster { --tg: min(17vw, 28svh); }
+  .line { font-size: min(7.4vw, 17svh); } /* the longest line stops short of the clock */
   .target { top: var(--gutter); right: calc(var(--gutter) + 8rem); }
   .dots { top: var(--gutter); right: calc(var(--gutter) + 10rem + var(--tg)); width: 3rem; }
 }
 
-/* Tall screens (tablets upright, rotated monitors): bigger type and target to fill the height */
-@media (min-width: 761px) and (orientation: portrait) {
-  .poster { --tg: min(30vw, 24svh); }
-  .line { font-size: min(9.4vw, 12rem); } /* the longest line stops short of the clock */
+/* ---------- Text layouts by screen shape ----------
+   The headline is always two lines. Wide screens use the default above: bottom-left, with the
+   clock bottom-right. Upright phones have their own stack, above. */
+
+/* Square and tall (near-square windows, tablets upright, rotated monitors): the clock moves up
+   under the target, which frees the whole width for a much bigger headline. */
+@media (min-width: 761px) and (max-aspect-ratio: 5/4) {
+  .poster { --tg: min(24vw, 26svh); --top: 12%; --side: 8%; }
+  .line { font-size: min(11.5vw, 15svh); }
+  .target { top: var(--top); right: var(--side); }
+  .dots { top: calc(var(--top) + var(--tg) * .3); right: calc(var(--side) + var(--tg) + clamp(1.5rem, 3vw, 3rem)); }
+  .time { bottom: auto; top: calc(var(--top) + var(--tg) + 1.5rem); right: var(--side); }
 }
 
 @media (min-width: 1800px) { html { font-size: 125%; } }
