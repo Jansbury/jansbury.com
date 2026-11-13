@@ -1,5 +1,5 @@
 // Two clocks. The digital one bottom-right is always Auckland, where Jans is; the hands on the
-// target show the visitor's own time. The vertical rule fills over the Auckland day, and dragging
+// target show the visitor's own time, labelled with their city. The vertical rule fills over the Auckland day, and dragging
 // it (or focusing it and using the arrow keys) scrubs all of it. The IANA zone handles NZ
 // daylight saving.
 //
@@ -23,10 +23,23 @@ const box = document.querySelector("[data-clock]");
 const timeEl = document.querySelector("[data-time]");
 const labelEl = document.querySelector("[data-place]");
 const diffEl = document.querySelector("[data-diff]");
+const hereEl = document.querySelector("[data-here]");
 const bar = document.querySelector("[data-scrub]");
 const handle = bar?.querySelector(".scrub");
 const still = matchMedia("(prefers-reduced-motion: reduce)");
 const pad = (n) => String(n).padStart(2, "0");
+
+// The visitor's city, hung under the target whose hands show their time:
+// "Europe/London" -> "london", "America/Los_Angeles" -> "los angeles".
+// Zones with no city in them ("UTC", "Etc/GMT+5") get no label.
+const RENAMED = { calcutta: "kolkata", saigon: "ho chi minh", kiev: "kyiv", rangoon: "yangon", katmandu: "kathmandu" };
+const zone = Intl.DateTimeFormat().resolvedOptions().timeZone ?? "";
+if (hereEl && zone.includes("/") && !zone.startsWith("Etc/")) {
+  const raw = zone.split("/").pop().replace(/_/g, " ").toLowerCase();
+  const name = RENAMED[raw] ?? raw;
+  hereEl.textContent = name;
+  hereEl.style.setProperty("--n", name.length); // site.css tightens the spacing for long names
+}
 
 const fmt = new Intl.DateTimeFormat("en-NZ", {
   timeZone: ZONE,
@@ -67,7 +80,7 @@ function inWords({ offset, days }) {
 // Auckland time is drawn as a 5x7 dot matrix in the same round dots as the "Hi" grid.
 // The dots stay in place and switch on and off, so digits morph into each other.
 const bits = (rows) => [...rows.replace(/ /g, "")].map((bit) => bit === "1");
-const GLYPHS = [
+export const GLYPHS = [
   "01110 10001 10001 10001 10001 10001 01110",
   "00100 01100 00100 00100 00100 00100 01110",
   "01110 10001 00001 00010 00100 01000 11111",
