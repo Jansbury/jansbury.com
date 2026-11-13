@@ -114,10 +114,12 @@ a { color: inherit; }
   text-transform: uppercase;
 }
 .l { display: block; }
-.l--2 { padding-left: .5em; }
+/* --stack-* are set where a layout has the height to stack the headline into four lines:
+   the verb drops to its own line, and the second line wraps to two, the last one indented */
+.l--2 { padding-left: .5em; text-indent: var(--stack-outdent, 0); max-width: var(--stack-measure, none); text-wrap: balance; }
 .line em { font-style: italic; text-transform: none; letter-spacing: 0; }
 /* When the headline changes on its timer (palette.js), the new words wipe in like the load sequence */
-.line [data-does] { display: inline-block; }
+.line [data-does] { display: var(--stack-verb, inline-block); width: fit-content; margin-left: var(--stack-indent, 0); }
 @media (prefers-reduced-motion: no-preference) {
   .line .is-reprint { animation: wipe 220ms steps(5, end) both; }
   .line .l.is-reprint { animation: wipe 220ms steps(5, end) both 140ms; }
@@ -339,19 +341,37 @@ html.is-scrubbing .rule--v::after { left: -9px; width: 19px; }
 @keyframes draw-x { from { scale: 0 1; } }
 @keyframes draw-y { from { scale: 1 0; } }
 
-/* ---------- Phones upright: a top-down stack. The target, clock and socials hang from the top
+/* ---------- Narrow and upright: a top-down stack. The target, clock and socials hang from the top
    in fixed steps, and the copy keeps clear of them, so nothing collides on short phones
-   (the page scrolls a little on the smallest instead). ---------- */
-@media (max-width: 760px) and (orientation: portrait) {
-  .home { --tg: min(44vw, 30svh); --top: calc(var(--gutter) + 5rem); }
+   (the page scrolls a little on the smallest instead).
+   Spare height goes to the target first: it grows by whatever the stack leaves over
+   (24.5rem + 21.3vw: the logo, the clock, a two-line headline, the sentence and the margins). ---------- */
+@media (max-width: 699px) and (orientation: portrait) {
+  .home { --tg: clamp(min(44vw, 30svh), calc(100svh - 24.5rem - 21.3vw), 60vw); --top: calc(var(--gutter) + 5rem); }
   .line { font-size: 11.8vw; } /* the longest headline, "Software & tools", just fits at this size */
-  .l--2 { padding-left: .5em; }
   .copy { margin-top: calc(var(--tg) + 9.1rem); }
   .target { right: 8%; top: var(--top); }
   .vert { display: none; }
   .dots { right: auto; left: var(--gutter); top: calc(var(--top) + var(--tg) * .2); width: 4.6rem; }
   .rule--v { top: calc(var(--top) - 1rem); height: calc(var(--tg) + 9rem); }
   .time { right: calc(var(--gutter) + 1rem); bottom: auto; top: calc(var(--top) + var(--tg) + 1rem); }
+}
+/* Taller still, the headline stacks into four lines. The height that needs grows with the width
+   (about 91vw + 24rem), which a media query can't say, so the break steps up in bands.
+   From there the target and the headline share the spare height
+   (24.5rem: the stack without a headline; 3.6: four lines at this leading). */
+@media (max-width: 399px) and (min-height: 745px) and (orientation: portrait),
+       (min-width: 400px) and (max-width: 449px) and (min-height: 790px) and (orientation: portrait),
+       (min-width: 450px) and (max-width: 499px) and (min-height: 835px) and (orientation: portrait),
+       (min-width: 500px) and (max-width: 549px) and (min-height: 880px) and (orientation: portrait),
+       (min-width: 550px) and (max-width: 599px) and (min-height: 925px) and (orientation: portrait),
+       (min-width: 600px) and (max-width: 649px) and (min-height: 970px) and (orientation: portrait),
+       (min-width: 650px) and (max-width: 699px) and (min-height: 1020px) and (orientation: portrait) {
+  .home {
+    --tg: clamp(min(44vw, 30svh), calc(100svh - 24.5rem - 68.4vw), 60vw);
+    --stack-verb: block; --stack-indent: .5em; --stack-outdent: -.5em; --stack-measure: 5.2em;
+  }
+  .line { font-size: min(19vw, calc((100svh - var(--tg) - 24.5rem) / 3.6)); }
 }
 
 /* Phones on their side: the target and dots move up into the empty top band, clear of the clock */
@@ -362,18 +382,18 @@ html.is-scrubbing .rule--v::after { left: -9px; width: 19px; }
   .dots { top: var(--gutter); right: calc(var(--gutter) + 10rem + var(--tg)); width: 3rem; }
 }
 
-/* Upright tablets and other tall windows: the same arrangement, with the headline set larger
-   and stacked into four lines so it fills the width. The target moves up to make room,
-   and the hanging city name goes, as on phones.
-   Only where the window is clearly taller than wide: nearer square there isn't the height. */
-@media (min-width: 761px) and (max-width: 1100px) and (max-aspect-ratio: 9/10) {
-  .home { --tg: min(46vw, 30svh); --top: 12%; }
+/* Tall and near-square windows with height to spare: the same arrangement, with the headline
+   set larger and stacked into four lines. Its size follows the height as much as the width.
+   The target moves up to make room, and the hanging city name goes, as on phones. */
+@media (min-width: 700px) and (min-height: 760px) and (max-aspect-ratio: 6/5) {
+  .home {
+    --tg: min(46vw, 30svh); --top: 12%; --dots: clamp(3.6rem, 5.4vw, 6.6rem);
+    --stack-verb: block; --stack-indent: .5em; --stack-outdent: -.5em; --stack-measure: 5.2em;
+  }
   .line { font-size: min(15.5vw, 10.5svh); }
-  .line [data-does] { display: block; width: fit-content; margin-left: .5em; }
-  .l--2 { padding-left: .5em; text-indent: -.5em; max-width: 5.2em; text-wrap: balance; } /* always two lines, the second indented */
-  .target { top: var(--top); right: 12%; }
+  .target { top: var(--top); right: calc(var(--gutter) + var(--dots) + 3rem); }
   .vert { display: none; }
-  .dots { top: calc(var(--top) + var(--tg) * .62); right: var(--gutter); }
+  .dots { width: var(--dots); top: calc(var(--top) + var(--tg) * .62); right: calc(var(--gutter) + 1.25rem); }
   .rule--v { top: var(--top); }
 }
 
