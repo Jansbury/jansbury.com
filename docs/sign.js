@@ -7,7 +7,7 @@
 // it without interacting, find no address. This keeps casual harvesting off it; it can't stop someone
 // determined, since any visitor can open the line.
 const SOCIALS = [
-  ["contact", "bW9jLnlydWJzbmFqQG9sbGVoOm90bGlhbQ=="],
+  ["contact", "bW9jLnlydWJzbmFqQG1vb3JsaWFtOm90bGlhbQ=="],
 ];
 
 const GLYPHS = {
