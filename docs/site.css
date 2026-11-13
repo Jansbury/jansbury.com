@@ -29,6 +29,15 @@
   --hair: max(1.5px, .12vw);
   /* Target size: from width and height, so it never swamps short or tall screens */
   --tg: clamp(6rem, min(17vw, 34svh), 22rem);
+  --pip: clamp(.5rem, .8vw, 1rem); /* one square of the palette switch */
+  /* The clock's three lines, and so its height, for layouts that hang things from it */
+  --tk: clamp(.8rem, .7rem + .3vw, 1.1rem);
+  --tv: clamp(2.4rem, 4.2vw, 6rem);
+  --td: clamp(1rem, .85rem + .5vw, 1.6rem);
+  --time-h: calc(var(--tk) * 1.45 + var(--tv) * 1.3 + var(--td) * 1.2);
+  /* The inner right-hand line in the bespoke narrow and tall layouts: the clock, the dots
+     and the target all end on it, a step in from the day bar */
+  --rail: calc(var(--gutter) + var(--pip) + .75rem);
   --t: 240ms;
   --ease: cubic-bezier(.2, .7, .2, 1);
 
@@ -91,9 +100,9 @@ a { color: inherit; }
 }
 .time[hidden] { display: none; }
 .time p { margin: 0; }
-.time__k { font-family: var(--sans); font-size: clamp(.8rem, .7rem + .3vw, 1.1rem); }
+.time__k { font-family: var(--sans); font-size: var(--tk); line-height: 1.45; }
 /* Dot-matrix digits (clock.js builds them): 5x7 cells, one em tall */
-.time__v { font-size: clamp(2.4rem, 4.2vw, 6rem); line-height: 1; margin-block: .18em .12em !important; }
+.time__v { font-size: var(--tv); line-height: 1; margin-block: .18em .12em !important; }
 .dm { display: flex; justify-content: flex-end; gap: .16em; height: 1em; }
 .dm i { display: grid; grid-template-columns: repeat(5, 1fr); grid-template-rows: repeat(7, 1fr); width: .714em; }
 .dm i.colon { grid-template-columns: 1fr; width: .143em; }
@@ -101,7 +110,7 @@ a { color: inherit; }
 .dm b.on { scale: .8; }
 .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 @media (prefers-reduced-motion: reduce) { .dm b { transition: none; } }
-.time__diff { font-family: var(--serif); font-style: italic; font-size: clamp(1rem, .85rem + .5vw, 1.6rem); }
+.time__diff { font-family: var(--serif); font-style: italic; font-size: var(--td); line-height: 1.2; }
 
 /* Headline: upright caps, italic connectives */
 .line {
@@ -222,7 +231,7 @@ a { color: inherit; }
   padding: .75rem;
   border: 0; background: none; cursor: pointer;
 }
-.pips b { display: block; width: clamp(.5rem, .8vw, 1rem); aspect-ratio: 1; background: var(--ink); transition: rotate var(--t) var(--ease); }
+.pips b { display: block; width: var(--pip); aspect-ratio: 1; background: var(--ink); transition: rotate var(--t) var(--ease); }
 .pips:focus-visible b:nth-child(2) { rotate: 45deg; }
 @media (hover: hover) { .pips:hover b:nth-child(2) { rotate: 45deg; } }
 
@@ -347,14 +356,20 @@ html.is-scrubbing .rule--v::after { left: -9px; width: 19px; }
    Spare height goes to the target first: it grows by whatever the stack leaves over
    (24.5rem + 21.3vw: the logo, the clock, a two-line headline, the sentence and the margins). ---------- */
 @media (max-width: 699px) and (orientation: portrait) {
-  .home { --tg: clamp(min(44vw, 30svh), calc(100svh - 24.5rem - 21.3vw), 60vw); --top: calc(var(--gutter) + 5rem); }
+  .home { --tg: clamp(min(44vw, 30svh), calc(100svh - 24.5rem - 21.3vw), 60vw); --top: calc(var(--gutter) + 5rem + var(--slack, 0px) * .35); }
   .line { font-size: 11.8vw; } /* the longest headline, "Software & tools", just fits at this size */
-  .copy { margin-top: calc(var(--tg) + 9.1rem); }
-  .target { right: 8%; top: var(--top); }
+  .copy { margin-top: calc(var(--tg) + 9.1rem + var(--slack, 0px) * .35); }
+  /* Two lines on the right: the squares and the day bar share the outer one, with the squares'
+     edge on the margin; the target and the clock end on the inner one. The day bar runs
+     from the top of the target to the foot of the clock. */
+  .pips { right: calc(var(--gutter) + var(--pip) / 2 - 22px); width: 44px; padding-inline: 0; }
+  .rule--v { right: calc(var(--gutter) + var(--pip) / 2 - var(--hair) / 2); top: var(--top); height: calc(var(--tg) + 1rem + var(--time-h)); }
+  .target { right: var(--rail); top: var(--top); }
+  .time { right: var(--rail); bottom: auto; top: calc(var(--top) + var(--tg) + 1rem); }
   .vert { display: none; }
-  .dots { right: auto; left: var(--gutter); top: calc(var(--top) + var(--tg) * .2); width: 4.6rem; }
-  .rule--v { top: calc(var(--top) - 1rem); height: calc(var(--tg) + 9rem); }
-  .time { right: calc(var(--gutter) + 1rem); bottom: auto; top: calc(var(--top) + var(--tg) + 1rem); }
+  /* The dots sit on the target's centre line, where its hands turn */
+  /* (.066 of the grid: the outer dots sit that far inside its box, so this puts them on the margin) */
+  .dots { right: auto; left: calc(var(--gutter) - 4.6rem * .066); width: 4.6rem; top: calc(var(--top) + var(--tg) / 2 - 2.3rem); }
 }
 /* Taller still, the headline stacks into four lines. The height that needs grows with the width
    (about 91vw + 24rem), which a media query can't say, so the break steps up in bands.
@@ -369,9 +384,13 @@ html.is-scrubbing .rule--v::after { left: -9px; width: 19px; }
        (min-width: 650px) and (max-width: 699px) and (min-height: 1020px) and (orientation: portrait) {
   .home {
     --tg: clamp(min(44vw, 30svh), calc(100svh - 24.5rem - 68.4vw), 60vw);
+    --fs: min(19vw, calc((100svh - var(--tg) - 24.5rem) / 3.6));
+    /* Once both have hit their width limits, a third of what is left over goes above the target,
+       so a very tall, thin window doesn't pool it all in one gap */
+    --slack: max(0px, calc(100svh - 24.5rem - var(--tg) - 3.6 * var(--fs)));
     --stack-verb: block; --stack-indent: .5em; --stack-outdent: -.5em; --stack-measure: 5.2em;
   }
-  .line { font-size: min(19vw, calc((100svh - var(--tg) - 24.5rem) / 3.6)); }
+  .line { font-size: var(--fs); }
 }
 
 /* Phones on their side: the target and dots move up into the empty top band, clear of the clock */
@@ -387,14 +406,21 @@ html.is-scrubbing .rule--v::after { left: -9px; width: 19px; }
    The target moves up to make room, and the hanging city name goes, as on phones. */
 @media (min-width: 700px) and (min-height: 760px) and (max-aspect-ratio: 6/5) {
   .home {
-    --tg: min(46vw, 30svh); --top: 12%; --dots: clamp(3.6rem, 5.4vw, 6.6rem);
+    --fs: min(15.5vw, 10.5svh); --top: 12%; --dots: clamp(3.6rem, 5.4vw, 6.6rem);
+    /* The target takes the height the copy leaves under the top margin
+       (3.6: four headline lines; 11rem: the sentence and the gaps either side of the headline) */
+    --tg: clamp(min(46vw, 30svh), calc(88svh - 3.6 * var(--fs) - 11rem - var(--gutter)), 58vw);
     --stack-verb: block; --stack-indent: .5em; --stack-outdent: -.5em; --stack-measure: 5.2em;
   }
-  .line { font-size: min(15.5vw, 10.5svh); }
-  .target { top: var(--top); right: calc(var(--gutter) + var(--dots) + 3rem); }
+  .line { font-size: var(--fs); }
+  /* The same two right-hand lines as the narrow layout. The clock's foot is level with the
+     sentence's, and the day bar runs from the top of the target down to it. */
+  .pips { right: calc(var(--gutter) + var(--pip) / 2 - 22px); width: 44px; padding-inline: 0; }
+  .rule--v { right: calc(var(--gutter) + var(--pip) / 2 - var(--hair) / 2); top: var(--top); bottom: var(--gutter); height: auto; }
+  .target { top: var(--top); right: calc(var(--rail) + var(--dots) + clamp(1.5rem, 4vw, 4rem)); }
+  .dots { width: var(--dots); top: calc(var(--top) + var(--tg) * .62); right: calc(var(--rail) - var(--dots) * .066); }
+  .time { right: var(--rail); bottom: var(--gutter); }
   .vert { display: none; }
-  .dots { width: var(--dots); top: calc(var(--top) + var(--tg) * .62); right: calc(var(--gutter) + 1.25rem); }
-  .rule--v { top: var(--top); }
 }
 
 /* Short screens: the hanging city name would run into the headline */
