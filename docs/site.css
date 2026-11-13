@@ -362,15 +362,18 @@ html.is-scrubbing .rule--v::after { left: -9px; width: 19px; }
   .dots { top: var(--gutter); right: calc(var(--gutter) + 10rem + var(--tg)); width: 3rem; }
 }
 
-/* Upright tablets and small square windows: the clock moves up under the target, the hanging
-   city name goes, and the headline has the bottom of the page to itself. */
-@media (min-width: 761px) and (max-width: 1100px) and (max-aspect-ratio: 5/4) {
-  .poster { --tg: min(24vw, 26svh); --top: 12%; --side: 8%; }
-  .line { font-size: min(9.2vw, 12svh); }
+/* Upright tablets and other tall windows: a poster. The target becomes the centrepiece, large
+   in the middle of the page, with the dots beside it on the left, the clock tucked under its
+   right edge and the headline along the bottom. The hanging city name goes.
+   Only where the window is clearly taller than wide: nearer square there isn't the height. */
+@media (min-width: 761px) and (max-width: 1100px) and (max-aspect-ratio: 9/10) {
+  .poster { --tg: min(56vw, 40svh); --top: 16%; --side: 11%; }
+  .line { font-size: min(9.6vw, 12svh); }
   .target { top: var(--top); right: var(--side); }
   .vert { display: none; }
-  .dots { top: calc(var(--top) + var(--tg) * .3); right: calc(var(--side) + var(--tg) + clamp(1.5rem, 3vw, 3rem)); }
-  .time { bottom: auto; top: calc(var(--top) + var(--tg) + 1.5rem); right: var(--side); }
+  .dots { right: auto; left: var(--gutter); top: calc(var(--top) + var(--tg) * .42); }
+  .time { bottom: auto; top: calc(var(--top) + var(--tg) + 1.75rem); right: var(--side); }
+  .rule--v { top: var(--top); height: calc(var(--tg) + 9rem); }
 }
 
 /* Short screens: the hanging city name would run into the headline */
