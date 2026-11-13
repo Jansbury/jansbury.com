@@ -1,5 +1,5 @@
-// Each visit opens on a random palette, never the same one twice in a row.
-// The three squares top-right step through the rest by hand.
+// Each visit is a new print run: a random palette and a random headline, never the same as the
+// last visit. The three squares top-right step through the rest by hand.
 // Loaded as a plain blocking script in <head> so the palette is set before the first paint
 // (no flash of the default orange); wrapped in a function to keep its names out of the global scope.
 (() => {
@@ -45,12 +45,51 @@ function knock() {
   root.style.setProperty("--my", my.toFixed(1));
 }
 
+// The headline is reprinted too: each visit, and each switch, says a different thing Jans does.
+// In the second line, *asterisks* mark the italic words and _underscores_ letters that stay
+// lower case in the capitals (the s in "UIs").
+const LINES = [
+  ["designs", "UI_s_ *&* UX flows"],
+  ["builds", "Software"],
+  ["solves", "Hard problems"],
+  ["automates", "The boring bits"],
+  ["makes", "Stuff *&* things"],
+];
+const LINE_KEY = "jansbury-last-line";
+let line = 0;
+
+function setLine(n) {
+  line = n;
+  const does = document.querySelector("[data-does]");
+  const what = document.querySelector("[data-what]");
+  if (!does || !what) return;
+  does.textContent = LINES[n][0];
+  const wrap = (tag, text, className) => {
+    const el = document.createElement(tag);
+    if (className) el.className = className;
+    el.textContent = text;
+    return el;
+  };
+  what.replaceChildren(...LINES[n][1].split("*").flatMap((part, i) => {
+    if (i % 2) return [wrap("em", part)];
+    return part.split("_").map((bit, j) => (j % 2 ? wrap("span", bit, "lc") : bit));
+  }));
+  try { localStorage.setItem(LINE_KEY, n); } catch { /* storage blocked: repeats are possible */ }
+}
+
 function reprint() {
   apply(order[(order.indexOf(root.dataset.theme) + 1) % order.length]);
+  setLine((line + 1) % LINES.length);
   knock();
 }
 
 document.addEventListener("DOMContentLoaded", () => {
+  // Open on a random line, never the one from the last visit
+  let lastLine = null;
+  try { lastLine = localStorage.getItem(LINE_KEY); } catch { /* storage blocked */ }
+  const fresh = LINES.map((_, i) => i).filter((i) => String(i) !== lastLine);
+  setLine(fresh[Math.floor(Math.random() * fresh.length)]);
+
   const pips = document.querySelector("[data-palette-switch]");
   pips?.addEventListener("click", reprint);
   // A mouse or touch press shouldn't leave the focus ring behind (it shows after typing to the

@@ -116,6 +116,7 @@ a { color: inherit; }
 .l { display: block; }
 .l--2 { padding-left: .9em; }
 .line em { font-style: italic; text-transform: none; letter-spacing: 0; }
+.line .lc { text-transform: none; }
 .line a {
   text-decoration: underline;
   text-decoration-thickness: .035em;
