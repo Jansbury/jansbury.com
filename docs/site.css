@@ -354,9 +354,9 @@ html.is-scrubbing .rule--v::after { left: -9px; width: 19px; }
    in fixed steps, and the copy keeps clear of them, so nothing collides on short phones
    (the page scrolls a little on the smallest instead).
    Spare height goes to the target first: it grows by whatever the stack leaves over
-   (24.5rem + 21.3vw: the logo, the clock, a two-line headline, the sentence and the margins). ---------- */
+   (26rem + 21.3vw: the logo, the clock, a two-line headline, the sentence and the margins). ---------- */
 @media (max-width: 699px) and (orientation: portrait) {
-  .home { --tg: clamp(min(44vw, 30svh), calc(100svh - 24.5rem - 21.3vw), 60vw); --top: calc(var(--gutter) + 5rem + var(--slack, 0px) * .35); }
+  .home { --tg: clamp(min(44vw, 28svh), calc(100svh - 26rem - 21.3vw), 60vw); --top: calc(var(--gutter) + 5rem + var(--slack, 0px) * .35); }
   .line { font-size: 11.8vw; } /* the longest headline, "Software & tools", just fits at this size */
   .copy { margin-top: calc(var(--tg) + 9.1rem + var(--slack, 0px) * .35); }
   /* Two lines on the right: the squares and the day bar share the outer one, with the squares'
@@ -372,22 +372,22 @@ html.is-scrubbing .rule--v::after { left: -9px; width: 19px; }
   .dots { right: auto; left: calc(var(--gutter) - 4.6rem * .066); width: 4.6rem; top: calc(var(--top) + var(--tg) / 2 - 2.3rem); }
 }
 /* Taller still, the headline stacks into four lines. The height that needs grows with the width
-   (about 91vw + 24rem), which a media query can't say, so the break steps up in bands.
+   (about 91vw + 25.5rem), which a media query can't say, so the break steps up in bands.
    From there the target and the headline share the spare height
-   (24.5rem: the stack without a headline; 3.6: four lines at this leading). */
-@media (max-width: 399px) and (min-height: 745px) and (orientation: portrait),
-       (min-width: 400px) and (max-width: 449px) and (min-height: 790px) and (orientation: portrait),
-       (min-width: 450px) and (max-width: 499px) and (min-height: 835px) and (orientation: portrait),
-       (min-width: 500px) and (max-width: 549px) and (min-height: 880px) and (orientation: portrait),
-       (min-width: 550px) and (max-width: 599px) and (min-height: 925px) and (orientation: portrait),
-       (min-width: 600px) and (max-width: 649px) and (min-height: 970px) and (orientation: portrait),
-       (min-width: 650px) and (max-width: 699px) and (min-height: 1020px) and (orientation: portrait) {
+   (26rem: the stack without a headline; 3.6: four lines at this leading). */
+@media (max-width: 399px) and (min-height: 770px) and (orientation: portrait),
+       (min-width: 400px) and (max-width: 449px) and (min-height: 815px) and (orientation: portrait),
+       (min-width: 450px) and (max-width: 499px) and (min-height: 860px) and (orientation: portrait),
+       (min-width: 500px) and (max-width: 549px) and (min-height: 905px) and (orientation: portrait),
+       (min-width: 550px) and (max-width: 599px) and (min-height: 950px) and (orientation: portrait),
+       (min-width: 600px) and (max-width: 649px) and (min-height: 995px) and (orientation: portrait),
+       (min-width: 650px) and (max-width: 699px) and (min-height: 1045px) and (orientation: portrait) {
   .home {
-    --tg: clamp(min(44vw, 30svh), calc(100svh - 24.5rem - 68.4vw), 60vw);
-    --fs: min(19vw, calc((100svh - var(--tg) - 24.5rem) / 3.6));
+    --tg: clamp(min(44vw, 28svh), calc(100svh - 26rem - 68.4vw), 60vw);
+    --fs: min(19vw, calc((100svh - var(--tg) - 26rem) / 3.6));
     /* Once both have hit their width limits, a third of what is left over goes above the target,
        so a very tall, thin window doesn't pool it all in one gap */
-    --slack: max(0px, calc(100svh - 24.5rem - var(--tg) - 3.6 * var(--fs)));
+    --slack: max(0px, calc(100svh - 26rem - var(--tg) - 3.6 * var(--fs)));
     --stack-verb: block; --stack-indent: .5em; --stack-outdent: -.5em; --stack-measure: 5.2em;
   }
   .line { font-size: var(--fs); }
@@ -397,8 +397,17 @@ html.is-scrubbing .rule--v::after { left: -9px; width: 19px; }
 @media (max-height: 500px) and (orientation: landscape) {
   .home { --tg: min(17vw, 28svh); }
   .line { font-size: min(7.4vw, 17svh); } /* the longest line stops short of the clock */
+  /* Fewer lines, so the headline stays clear of the logo; 13rem keeps it short of the clock */
+  .blurb { max-width: min(56ch, calc(100vw - 2 * var(--gutter) - 13rem)); }
   .target { top: var(--gutter); right: calc(var(--gutter) + 8rem); }
   .dots { top: var(--gutter); right: calc(var(--gutter) + 10rem + var(--tg)); width: 3rem; }
+}
+
+/* The smallest phones on their side: everything in the copy comes down a step to fit the height */
+@media (max-height: 360px) and (orientation: landscape) {
+  .line { font-size: min(6.4vw, 15svh); }
+  .copy { row-gap: .75rem; }
+  .blurb { font-size: .92rem; }
 }
 
 /* Tall and near-square windows with height to spare: the same arrangement, with the headline
