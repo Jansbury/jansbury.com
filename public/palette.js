@@ -45,12 +45,26 @@ function knock() {
   root.style.setProperty("--my", `${my.toFixed(1)}px`);
 }
 
+// Every visit opens already off register, by 5 to 10px in a random direction.
+{
+  const angle = Math.random() * Math.PI * 2;
+  const far = 5 + Math.random() * 5;
+  mx = Math.cos(angle) * far;
+  my = Math.sin(angle) * far;
+  root.style.setProperty("--mx", `${mx.toFixed(1)}px`);
+  root.style.setProperty("--my", `${my.toFixed(1)}px`);
+}
+
 function reprint() {
   apply(order[(order.indexOf(root.dataset.theme) + 1) % order.length]);
   knock();
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-  document.querySelector("[data-palette-switch]")?.addEventListener("click", reprint);
+  const pips = document.querySelector("[data-palette-switch]");
+  pips?.addEventListener("click", reprint);
+  // A mouse or touch press shouldn't leave the focus ring behind (it shows after typing to the
+  // dots, since the browser then treats the page as keyboard-driven); Tab still focuses it.
+  pips?.addEventListener("pointerdown", (e) => e.preventDefault());
 });
 })();
