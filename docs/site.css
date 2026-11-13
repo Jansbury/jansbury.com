@@ -430,6 +430,7 @@ html.is-scrubbing .rule--v::after { left: -9px; width: 19px; }
   .home {
     --fs: min(15.5vw, 10.5svh); --top: 12%; --dots: clamp(3.6rem, 5.4vw, 6.6rem);
     --tr: calc(var(--rail) + var(--dots) + clamp(1.5rem, 4vw, 4rem)); --tt: var(--top);
+    --rail: calc(var(--gutter) + var(--pip) + clamp(1.5rem, 3vw, 3rem)); /* the dots and clock stand well clear of the day bar */
     /* The target takes the height the copy leaves under the top margin
        (3.6: four headline lines; 11rem: the sentence and the gaps either side of the headline) */
     --tg: clamp(min(46vw, 30svh), calc(88svh - 3.6 * var(--fs) - 11rem - var(--gutter)), 58vw);
