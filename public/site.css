@@ -298,8 +298,7 @@ html.is-scrubbing .rule--v::after { left: -9px; width: 19px; }
   .sign { animation: cut-in 1ms both 180ms; }
   .l--1 { animation: wipe 220ms steps(5, end) both 340ms; }
   .l--2 { animation: wipe 220ms steps(5, end) both 520ms; }
-  .l--3 { animation: wipe 220ms steps(5, end) both 700ms; }
-  .blurb { animation: cut-in 1ms both 860ms; }
+  .blurb { animation: cut-in 1ms both 720ms; }
   .target { animation: cut-in 1ms both 900ms; }
   .rule--v { animation: draw-y 280ms steps(7, end) both 960ms; transform-origin: 50% 0; }
   .pips, .time { animation: cut-in 1ms both 1080ms; }
