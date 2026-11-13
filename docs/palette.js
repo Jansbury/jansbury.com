@@ -53,7 +53,7 @@ const LINES = [
   ["designs", "UI_s_\u00a0*&* UX flows"],
   ["builds", "Software\u00a0*&* tools"],
   ["solves", "Hard problems"],
-  ["automates", "The boring bits"],
+  ["automates", "The boring jobs"],
   ["makes", "Stuff\u00a0*&* things"],
 ];
 const LINE_KEY = "jansbury-last-line";
