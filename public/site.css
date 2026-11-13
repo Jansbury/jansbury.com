@@ -27,6 +27,8 @@
   --sans: "Jost", "Futura", system-ui, sans-serif;
   --gutter: clamp(1.25rem, 4.5vw, 5rem);
   --hair: max(1.5px, .12vw);
+  /* Target size: from width and height, so it never swamps short or tall screens */
+  --tg: clamp(6rem, min(17vw, 34svh), 22rem);
   --t: 240ms;
   --ease: cubic-bezier(.2, .7, .2, 1);
   --px: 0;
@@ -110,7 +112,7 @@ a { color: inherit; }
   align-self: end; justify-self: start; /* only as wide as the words, so it never covers the dots */
   margin: 0;
   font-family: var(--serif); font-weight: 400;
-  font-size: clamp(3.2rem, 8.6vw, 12rem);
+  font-size: clamp(2.4rem, min(8.6vw, 15svh), 12rem);
   line-height: .9; letter-spacing: -.012em;
   text-transform: uppercase;
 }
@@ -177,11 +179,7 @@ a { color: inherit; }
 .is-open .sign__word:hover b, .is-open .sign__word:focus-visible b { scale: 1.1; }
 
 /* Make room above the line for the names */
-@media (min-width: 761px) { .poster:has(.sign) .time { bottom: calc(var(--gutter) + 3.5rem); } }
-@media (max-width: 760px) {
-  /* Phones: the line sits under the clock instead of in the corner */
-  .sign { bottom: auto; top: calc(18% + 44vw + 8rem); right: calc(var(--gutter) + 1rem); }
-}
+@media (min-width: 761px), (orientation: landscape) { .poster:has(.sign) .time { bottom: calc(var(--gutter) + 3.5rem); } }
 @media (prefers-reduced-motion: no-preference) {
   .sign { animation: cut-in 1ms both 1180ms; }
 }
@@ -202,11 +200,12 @@ a { color: inherit; }
   border: 0; background: none; cursor: pointer;
 }
 .pips b { display: block; width: clamp(.5rem, .8vw, 1rem); aspect-ratio: 1; background: var(--ink); transition: rotate var(--t) var(--ease); }
-.pips:hover b:nth-child(2), .pips:focus-visible b:nth-child(2) { rotate: 45deg; }
+.pips:focus-visible b:nth-child(2) { rotate: 45deg; }
+@media (hover: hover) { .pips:hover b:nth-child(2) { rotate: 45deg; } }
 
 /* The brand's target mark, in the site palette */
 .target {
-  width: clamp(8rem, 17vw, 22rem); aspect-ratio: 1; border-radius: 50%;
+  width: var(--tg); aspect-ratio: 1; border-radius: 50%;
   right: 24%; top: 26%;
   background: radial-gradient(circle, var(--core) 0 44%, var(--ring) 44.5%);
 }
@@ -226,8 +225,8 @@ a { color: inherit; }
 .hand--m { height: 37%; rotate: var(--mn, 0deg); }
 
 .vert {
-  right: calc(24% + clamp(8rem, 17vw, 22rem) / 2 - .5ch);
-  top: calc(26% + clamp(8rem, 17vw, 22rem) + 2.5rem);
+  right: calc(24% + var(--tg) / 2 - .5ch);
+  top: calc(26% + var(--tg) + 2.5rem);
   writing-mode: vertical-rl; text-orientation: upright;
   font-family: var(--sans); font-weight: 400;
   font-size: clamp(.8rem, .7rem + .4vw, 1.2rem);
@@ -237,7 +236,7 @@ a { color: inherit; }
 /* Dot grid: hover (or tap) and only the dots that spell "Hi" stay */
 .dots {
   width: clamp(3.6rem, 5.4vw, 6.6rem); aspect-ratio: 1;
-  right: 13%; bottom: 32%;
+  right: 13%; top: calc(26% + var(--tg) * .62); /* tied to the target, clear of the clock */
   display: grid; grid-template-columns: repeat(5, 1fr);
   pointer-events: auto; cursor: default;
 }
@@ -274,13 +273,13 @@ a { color: inherit; }
 .hours b:nth-child(3) { top: 50%; }
 .hours b:nth-child(4) { top: 75%; }
 .hours b:nth-child(5) { top: 100%; }
-.rule--v:has(.scrub:hover) .hours b, html.is-scrubbing .hours b { opacity: 1; }
+html.is-scrubbing .hours b { opacity: 1; }
+@media (hover: hover) { .rule--v:has(.scrub:hover) .hours b { opacity: 1; } }
 html.is-scrubbing .rule--v::after { left: -9px; width: 19px; }
 
-.rule--h { height: var(--hair); width: clamp(4rem, 7vw, 8rem); right: var(--gutter); bottom: var(--gutter); }
 
 /* ---------- Pointer parallax (parallax.js sets --px/--py from -1 to 1) ---------- */
-.target, .dots, .pips, .vert, .rule--v, .rule--h, .line {
+.target, .dots, .pips, .vert, .rule--v, .line {
   translate: calc(var(--px) * var(--depth, 0px)) calc(var(--py) * var(--depth, 0px));
 }
 .target { --depth: 34px; }
@@ -288,7 +287,6 @@ html.is-scrubbing .rule--v::after { left: -9px; width: 19px; }
 .dots   { --depth: 0px; }  /* hover target: must not run from the cursor */
 .pips   { --depth: 0px; }  /* button: same reason */
 .rule--v { --depth: 0px; }  /* drag target */
-.rule--h { --depth: 8px; }
 .line   { --depth: -6px; }
 
 /* ---------- Assembly on load: hard cuts, in reading order ---------- */
@@ -305,7 +303,7 @@ html.is-scrubbing .rule--v::after { left: -9px; width: 19px; }
   .target { animation: cut-in 1ms both 900ms; }
   .rule--v { animation: draw-y 280ms steps(7, end) both 960ms; transform-origin: 50% 0; }
   .vert, .pips, .time { animation: cut-in 1ms both 1080ms; }
-  .dots, .rule--h { animation: cut-in 1ms both 1180ms; }
+  .dots { animation: cut-in 1ms both 1180ms; }
 }
 @keyframes cut-in { from { visibility: hidden; } }
 @keyframes write {
@@ -322,16 +320,33 @@ html.is-scrubbing .rule--v::after { left: -9px; width: 19px; }
 @keyframes draw-x { from { scale: 0 1; } }
 @keyframes draw-y { from { scale: 1 0; } }
 
-/* ---------- Narrow screens: headline leads, decoration regroups above it ---------- */
-@media (max-width: 760px) {
+/* ---------- Phones upright: a top-down stack. The target, clock and socials hang from the top
+   in fixed steps, and the copy keeps clear of them, so nothing collides on short phones
+   (the page scrolls a little on the smallest instead). ---------- */
+@media (max-width: 760px) and (orientation: portrait) {
+  .poster { --tg: min(44vw, 30svh); --top: calc(var(--gutter) + 5rem); }
   .line { font-size: 12.6vw; }
   .l--2 { padding-left: .5em; }
-  .target { width: 44vw; right: 8%; top: 18%; }
+  .copy { margin-top: calc(var(--tg) + 12.1rem); }
+  .target { right: 8%; top: var(--top); }
   .vert { display: none; }
-  .dots { right: auto; left: var(--gutter); top: 34%; bottom: auto; width: 4.6rem; }
-  .rule--v { height: 34%; top: 14%; }
-  .time { right: calc(var(--gutter) + 1rem); bottom: auto; top: calc(18% + 44vw + 1.5rem); }
-  .rule--h { display: none; }
+  .dots { right: auto; left: var(--gutter); top: calc(var(--top) + var(--tg) * .2); width: 4.6rem; }
+  .rule--v { top: calc(var(--top) - 1rem); height: calc(var(--tg) + 9rem); }
+  .time { right: calc(var(--gutter) + 1rem); bottom: auto; top: calc(var(--top) + var(--tg) + 1rem); }
+  .sign { bottom: auto; top: calc(var(--top) + var(--tg) + 7.6rem); right: calc(var(--gutter) + 1rem); }
+}
+
+/* Phones on their side: the target and dots move up into the empty top band, clear of the clock */
+@media (max-height: 500px) and (orientation: landscape) {
+  .poster { --tg: min(17vw, 28svh); }
+  .target { top: var(--gutter); right: calc(var(--gutter) + 8rem); }
+  .dots { top: var(--gutter); right: calc(var(--gutter) + 10rem + var(--tg)); width: 3rem; }
+}
+
+/* Tall screens (tablets upright, rotated monitors): bigger type and target to fill the height */
+@media (min-width: 761px) and (orientation: portrait) {
+  .poster { --tg: min(30vw, 24svh); }
+  .line { font-size: min(11.5vw, 12rem); }
 }
 
 /* Short screens: the vertical name would run into the headline */

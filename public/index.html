@@ -11,16 +11,20 @@
 <html lang="en" data-theme="orange">
 <head>
   <meta charset="utf-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Jansbury</title>
   <meta name="description" content="Jans is a creative technologist in Auckland, NZ.">
   <meta name="robots" content="noindex, nofollow, noarchive">
   <meta name="theme-color" content="#da5328">
+  <script src="/palette.js"></script>
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://jansbury.com/">
   <meta property="og:title" content="Jansbury">
   <meta property="og:description" content="Jans is a creative technologist in Auckland, NZ.">
-  <meta property="og:image" content="https://jansbury.com/og.png">
+  <meta property="og:image" content="https://jansbury.com/og.jpg">
+  <meta property="og:image:type" content="image/jpeg">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
   <meta property="og:image:alt" content="The jansbury poster: handwritten logo and an orange field with a blue and amber circle.">
@@ -28,10 +32,10 @@
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link rel="preload" href="/fonts/instrument-serif.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="/fonts/instrument-serif-italic.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="/fonts/jost-latin.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="/site.css">
   <script src="/main.js" type="module"></script>
   <script src="/parallax.js" type="module"></script>
-  <script src="/palette.js" type="module"></script>
   <script src="/clock.js" type="module"></script>
   <script src="/eggs.js" type="module"></script>
   <script src="/sign.js" type="module"></script>

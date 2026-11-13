@@ -84,8 +84,14 @@ function setOpen(open) {
 if (sign) {
   sign.addEventListener("pointerenter", (e) => { if (e.pointerType === "mouse") setOpen(true); });
   sign.addEventListener("pointerleave", (e) => { if (e.pointerType === "mouse") setOpen(false); });
-  // Touch and keyboard toggle; a mouse already opened it on hover.
-  toggle.addEventListener("click", (e) => { if (e.pointerType !== "mouse") setOpen(!sign.classList.contains("is-open")); });
+  // Touch and keyboard toggle; a mouse already opened it on hover. Safari's click event carries no
+  // pointerType, so the type is remembered from pointerdown (a keyboard click has none).
+  let lastPointer = "";
+  toggle.addEventListener("pointerdown", (e) => { lastPointer = e.pointerType; });
+  toggle.addEventListener("click", () => {
+    if (lastPointer !== "mouse") setOpen(!sign.classList.contains("is-open"));
+    lastPointer = "";
+  });
   sign.addEventListener("keydown", (e) => { if (e.key === "Escape") { setOpen(false); toggle.focus(); } });
   sign.addEventListener("focusout", (e) => { if (!sign.contains(e.relatedTarget)) setOpen(false); });
   document.addEventListener("pointerdown", (e) => { if (!sign.contains(e.target)) setOpen(false); });
