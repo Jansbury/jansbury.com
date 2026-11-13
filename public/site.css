@@ -190,10 +190,16 @@ a { color: inherit; }
 /* ---------- Screen-print registration (palette.js) ----------
    The second plate prints in the ring colour under the ink, offset by --mx/--my,
    which drift a little further with every palette switch. */
-:root { --mx: 0px; --my: 0px; }
-.line { text-shadow: var(--mx) var(--my) 0 var(--ring); }
-.logo { filter: drop-shadow(var(--mx) var(--my) 0 var(--ring)); }
-.pips b, .dots b, .dm b.on { box-shadow: var(--mx) var(--my) 0 var(--ring); }
+/* The plate also follows the pointer (or a swipe, or the tilt of a phone): parallax.js sets
+   --px/--py from -1 to 1, and the plate slides up to 10px under the still ink. */
+:root {
+  --mx: 0px; --my: 0px;
+  --ox: calc(var(--mx) + var(--px) * 10px);
+  --oy: calc(var(--my) + var(--py) * 10px);
+}
+.line { text-shadow: var(--ox) var(--oy) 0 var(--ring); }
+.logo { filter: drop-shadow(var(--ox) var(--oy) 0 var(--ring)); }
+.pips b, .dots b, .dm b.on { box-shadow: var(--ox) var(--oy) 0 var(--ring); }
 
 /* ---------- Composition, after the mrrbt sleeve ---------- */
 .deco > * { position: absolute; display: block; margin: 0; pointer-events: none; }
@@ -216,7 +222,9 @@ a { color: inherit; }
   width: var(--tg); aspect-ratio: 1; border-radius: 50%;
   right: 24%; top: 26%;
   /* The core is its own plate, so it drifts off centre with the misregistration */
-  background: radial-gradient(circle at calc(50% + var(--mx)) calc(50% + var(--my)),
+  /* and it rolls further than the type plate as the pointer moves, like a loose disc in the ring */
+  background: radial-gradient(circle at calc(50% + var(--mx) + var(--px) * var(--tg) * .09)
+      calc(50% + var(--my) + var(--py) * var(--tg) * .09),
     var(--core) 0 calc(var(--tg) * .311), var(--ring) 0);
 }
 /* The target is also Auckland's clock face (clock.js sets --hr and --mn) */
@@ -288,16 +296,6 @@ html.is-scrubbing .hours b { opacity: 1; }
 html.is-scrubbing .rule--v::after { left: -9px; width: 19px; }
 
 
-/* ---------- Pointer parallax (parallax.js sets --px/--py from -1 to 1) ---------- */
-.target, .dots, .pips, .vert, .rule--v, .line {
-  translate: calc(var(--px) * var(--depth, 0px)) calc(var(--py) * var(--depth, 0px));
-}
-.target { --depth: 34px; }
-.vert   { --depth: 22px; }
-.dots   { --depth: 0px; }  /* hover target: must not run from the cursor */
-.pips   { --depth: 0px; }  /* button: same reason */
-.rule--v { --depth: 0px; }  /* drag target */
-.line   { --depth: -6px; }
 
 /* ---------- Assembly on load: hard cuts, in reading order ---------- */
 @media (prefers-reduced-motion: no-preference) {
