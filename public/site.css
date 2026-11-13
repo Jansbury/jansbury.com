@@ -133,7 +133,7 @@ a { color: inherit; }
 }
 .copy .line { align-self: auto; justify-self: start; }
 .blurb {
-  margin: 0; max-width: 31ch;
+  margin: 0; max-width: 38ch;
   font-family: var(--sans); font-size: clamp(1.05rem, .9rem + .55vw, 1.6rem); line-height: 1.4;
   text-wrap: pretty;
 }
@@ -346,10 +346,10 @@ html.is-scrubbing .rule--v::after { left: -9px; width: 19px; }
    clock bottom-right. Upright phones have their own stack, above. */
 
 /* Square and tall (near-square windows, tablets upright, rotated monitors): the clock moves up
-   under the target, which frees the whole width for a much bigger headline. */
+   under the target, so the headline has the bottom of the page to itself. */
 @media (min-width: 761px) and (max-aspect-ratio: 5/4) {
   .poster { --tg: min(24vw, 26svh); --top: 12%; --side: 8%; }
-  .line { font-size: min(11.5vw, 15svh); }
+  .line { font-size: min(9.2vw, 12svh); }
   .target { top: var(--top); right: var(--side); }
   .dots { top: calc(var(--top) + var(--tg) * .3); right: calc(var(--side) + var(--tg) + clamp(1.5rem, 3vw, 3rem)); }
   .time { bottom: auto; top: calc(var(--top) + var(--tg) + 1.5rem); right: var(--side); }
