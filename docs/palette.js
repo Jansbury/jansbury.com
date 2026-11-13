@@ -59,31 +59,52 @@ const LINES = [
 const LINE_KEY = "jansbury-last-line";
 let line = 0;
 
+const WIPE_OUT = 200; // ms; matches the wipe-out animation in site.css
+let swap = 0;
+
 function setLine(n, wipe = false) {
   line = n;
   const does = document.querySelector("[data-does]");
   const what = document.querySelector("[data-what]");
   if (!does || !what) return;
-  does.textContent = LINES[n][0];
+  try { localStorage.setItem(LINE_KEY, n); } catch { /* storage blocked: repeats are possible */ }
   const wrap = (tag, text, className) => {
     const el = document.createElement(tag);
     if (className) el.className = className;
     el.textContent = text;
     return el;
   };
-  what.replaceChildren(...LINES[n][1].split("*").flatMap((part, i) => {
-    if (i % 2) return [wrap("em", part)];
-    return part.split("_").map((bit, j) => (j % 2 ? wrap("span", bit, "lc") : bit));
-  }));
-  try { localStorage.setItem(LINE_KEY, n); } catch { /* storage blocked: repeats are possible */ }
-  if (wipe) {
-    // Replay the stepped wipe from the load sequence on the words that changed
+  const write = () => {
+    does.textContent = LINES[n][0];
+    what.replaceChildren(...LINES[n][1].split("*").flatMap((part, i) => {
+      if (i % 2) return [wrap("em", part)];
+      return part.split("_").map((bit, j) => (j % 2 ? wrap("span", bit, "lc") : bit));
+    }));
+  };
+  clearTimeout(swap);
+  if (!wipe) {
+    // A change by hand cuts straight over, even if a wipe was under way. "is-set" holds the words
+    // still: without it, dropping the wipe would replay the second line's load animation.
     for (const el of [does, what]) {
-      el.classList.remove("is-reprint");
-      void el.offsetWidth;
+      if (el.classList.contains("is-leaving") || el.classList.contains("is-reprint")) el.classList.add("is-set");
+      el.classList.remove("is-leaving", "is-reprint");
+    }
+    write();
+    return;
+  }
+  // The old words wipe away to the right, then the new ones wipe in from the left
+  for (const el of [does, what]) {
+    el.classList.remove("is-reprint", "is-set");
+    el.classList.add("is-leaving");
+  }
+  swap = setTimeout(() => {
+    write();
+    for (const el of [does, what]) {
+      el.classList.remove("is-leaving");
+      void el.offsetWidth; // restart the animation
       el.classList.add("is-reprint");
     }
-  }
+  }, WIPE_OUT);
 }
 
 // Left alone, the headline moves on to the next line every few seconds. It waits while the pointer

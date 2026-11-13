@@ -38,6 +38,9 @@
   /* The inner right-hand line in the bespoke narrow and tall layouts: the clock, the dots
      and the target all end on it, a step in from the day bar */
   --rail: calc(var(--gutter) + var(--pip) + .75rem);
+  /* Where the target sits: its right and top. The labels that hang off it follow these. */
+  --tr: 21%;
+  --tt: 24%;
   --t: 240ms;
   --ease: cubic-bezier(.2, .7, .2, 1);
 
@@ -118,7 +121,7 @@ a { color: inherit; }
   align-self: end; justify-self: start; /* only as wide as the words, so it never covers the dots */
   margin: 0;
   font-family: var(--serif); font-weight: 400;
-  font-size: clamp(2.4rem, min(8.6vw, 17svh), 13rem); /* the longest line stops short of the hanging city name */
+  font-size: clamp(2.4rem, min(8.6vw, 16svh), 13rem); /* the longest line stops short of the hanging city name */
   line-height: .9; letter-spacing: -.012em;
   text-transform: uppercase;
 }
@@ -127,11 +130,13 @@ a { color: inherit; }
    the verb drops to its own line, and the second line wraps to two, the last one indented */
 .l--2 { padding-left: .5em; text-indent: var(--stack-outdent, 0); max-width: var(--stack-measure, none); text-wrap: balance; }
 .line em { font-style: italic; text-transform: none; letter-spacing: 0; }
-/* When the headline changes on its timer (palette.js), the new words wipe in like the load sequence */
+/* When the headline changes on its timer (palette.js), the old words wipe away and the new ones wipe in */
 .line [data-does] { display: var(--stack-verb, inline-block); width: fit-content; margin-left: var(--stack-indent, 0); }
 @media (prefers-reduced-motion: no-preference) {
-  .line .is-reprint { animation: wipe 220ms steps(5, end) both; }
-  .line .l.is-reprint { animation: wipe 220ms steps(5, end) both 140ms; }
+  .line .is-set { animation: none; }
+  .line .is-leaving { animation: wipe-out 200ms cubic-bezier(.5, 0, .9, .5) both; } /* 200ms: WIPE_OUT in palette.js */
+  .line .is-reprint { animation: wipe-in 420ms var(--ease) both; }
+  .line .l.is-reprint { animation-duration: 640ms; animation-delay: 80ms; } /* the longer line takes longer */
 }
 .line .lc { text-transform: none; }
 .line a {
@@ -150,7 +155,7 @@ a { color: inherit; }
 }
 .copy .line { align-self: auto; justify-self: start; }
 .blurb {
-  margin: 0; max-width: 38ch;
+  margin: 0; max-width: min(58ch, 46vw); /* three lines on a wide screen, and short of the city name and the clock */
   font-family: var(--sans); font-size: clamp(1.05rem, .9rem + .55vw, 1.6rem); line-height: 1.4;
   text-wrap: pretty;
 }
@@ -238,7 +243,7 @@ a { color: inherit; }
 /* The brand's target mark, in the site palette */
 .target {
   width: var(--tg); aspect-ratio: 1; border-radius: 50%;
-  right: 21%; top: 24%;
+  right: var(--tr); top: var(--tt);
   /* The core is its own plate, so it drifts off centre with the misregistration */
   background: radial-gradient(circle at calc(50% + var(--ox) * 1.5) calc(50% + var(--oy) * 1.5),
     var(--core) 0 calc(var(--tg) * .311), var(--ring) 0);
@@ -260,8 +265,8 @@ a { color: inherit; }
 
 /* The visitor's city hangs under the target, whose hands show their time */
 .vert {
-  right: calc(21% + var(--tg) / 2 - .5ch);
-  top: calc(24% + var(--tg) + 2.5rem);
+  right: calc(var(--tr) + var(--tg) / 2 - .5ch);
+  top: calc(var(--tt) + var(--tg) + 2.5rem);
   writing-mode: vertical-rl; text-orientation: upright;
   font-family: var(--sans); font-weight: 400;
   font-size: clamp(.8rem, .7rem + .4vw, 1.2rem);
@@ -272,11 +277,10 @@ a { color: inherit; }
   letter-spacing: clamp(0em, calc(var(--room) / var(--n, 8) - 1.42em), .6em); /* 1.42em: one upright letter */
 }
 
-
 /* Dot grid: hover (or tap) and only the dots that spell "Hi" stay */
 .dots {
   width: clamp(3.6rem, 5.4vw, 6.6rem); aspect-ratio: 1;
-  right: 11%; top: calc(24% + var(--tg) * .62); /* tied to the target, clear of the clock */
+  right: 11%; top: calc(var(--tt) + var(--tg) * .62); /* tied to the target, clear of the clock */
   display: grid; grid-template-columns: repeat(5, 1fr);
   pointer-events: auto; cursor: default;
 }
@@ -292,7 +296,7 @@ a { color: inherit; }
 /* The vertical rule is a day bar: dashed track, solid fill up to now in Auckland */
 .rule--v {
   position: absolute; pointer-events: none; /* only the handle inside takes input */
-  width: var(--hair); height: 52%; right: calc(var(--gutter) + .4vw); top: 24%;
+  width: var(--hair); height: 52%; right: calc(var(--gutter) + .4vw); top: var(--tt);
   background: repeating-linear-gradient(to bottom, var(--ink) 0 2px, transparent 2px 7px);
 }
 .rule--v::before, .rule--v::after { content: ""; position: absolute; left: 0; background: var(--ink); }
@@ -347,6 +351,9 @@ html.is-scrubbing .rule--v::after { left: -9px; width: 19px; }
   100% { translate: 0 0; }
 }
 @keyframes wipe   { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(-10% -2% -10% 0); } }
+/* The smooth pair for headline changes. They reach past the box so the offset print isn't cut. */
+@keyframes wipe-in  { from { clip-path: inset(-10% 104% -10% -4%); } to { clip-path: inset(-10% -4% -10% -4%); } }
+@keyframes wipe-out { from { clip-path: inset(-10% -4% -10% -4%); } to { clip-path: inset(-10% -4% -10% 104%); } }
 @keyframes draw-x { from { scale: 0 1; } }
 @keyframes draw-y { from { scale: 1 0; } }
 
@@ -356,17 +363,24 @@ html.is-scrubbing .rule--v::after { left: -9px; width: 19px; }
    Spare height goes to the target first: it grows by whatever the stack leaves over
    (26rem + 21.3vw: the logo, the clock, a two-line headline, the sentence and the margins). ---------- */
 @media (max-width: 699px) and (orientation: portrait) {
-  .home { --tg: clamp(min(44vw, 28svh), calc(100svh - 26rem - 21.3vw), 60vw); --top: calc(var(--gutter) + 5rem + var(--slack, 0px) * .35); }
+  .home { --tg: clamp(min(44vw, 28svh), calc(100svh - 26rem - 21.3vw), var(--tg-max)); --top: calc(var(--gutter) + 5rem + var(--slack, 0px) * .35);
+    --tr: var(--rail); --tt: var(--top);
+    --rail: calc(var(--gutter) + var(--pip) + 1.4rem); /* wider here: the hour labels sit in this gap */
+    /* The target stops growing while there is still room beside it for the dots */
+    --tg-max: min(60vw, calc(100vw - var(--rail) - var(--gutter) - 5.6rem));
+  }
   .line { font-size: 11.8vw; } /* the longest headline, "Software & tools", just fits at this size */
   .copy { margin-top: calc(var(--tg) + 9.1rem + var(--slack, 0px) * .35); }
+  .blurb { max-width: 58ch; }
   /* Two lines on the right: the squares and the day bar share the outer one, with the squares'
      edge on the margin; the target and the clock end on the inner one. The day bar runs
      from the top of the target to the foot of the clock. */
   .pips { right: calc(var(--gutter) + var(--pip) / 2 - 22px); width: 44px; padding-inline: 0; }
   .rule--v { right: calc(var(--gutter) + var(--pip) / 2 - var(--hair) / 2); top: var(--top); height: calc(var(--tg) + 1rem + var(--time-h)); }
-  .target { right: var(--rail); top: var(--top); }
   .time { right: var(--rail); bottom: auto; top: calc(var(--top) + var(--tg) + 1rem); }
   .vert { display: none; }
+  /* The hour labels go inside the day bar, where the margin is too thin to hold them */
+  .hours b { left: auto; right: 7px; }
   /* The dots sit on the target's centre line, where its hands turn */
   /* (.066 of the grid: the outer dots sit that far inside its box, so this puts them on the margin) */
   .dots { right: auto; left: calc(var(--gutter) - 4.6rem * .066); width: 4.6rem; top: calc(var(--top) + var(--tg) / 2 - 2.3rem); }
@@ -383,7 +397,7 @@ html.is-scrubbing .rule--v::after { left: -9px; width: 19px; }
        (min-width: 600px) and (max-width: 649px) and (min-height: 995px) and (orientation: portrait),
        (min-width: 650px) and (max-width: 699px) and (min-height: 1045px) and (orientation: portrait) {
   .home {
-    --tg: clamp(min(44vw, 28svh), calc(100svh - 26rem - 68.4vw), 60vw);
+    --tg: clamp(min(44vw, 28svh), calc(100svh - 26rem - 68.4vw), var(--tg-max));
     --fs: min(19vw, calc((100svh - var(--tg) - 26rem) / 3.6));
     /* Once both have hit their width limits, a third of what is left over goes above the target,
        so a very tall, thin window doesn't pool it all in one gap */
@@ -395,12 +409,11 @@ html.is-scrubbing .rule--v::after { left: -9px; width: 19px; }
 
 /* Phones on their side: the target and dots move up into the empty top band, clear of the clock */
 @media (max-height: 500px) and (orientation: landscape) {
-  .home { --tg: min(17vw, 28svh); }
+  .home { --tg: min(17vw, 28svh); --tr: calc(var(--gutter) + 8rem); --tt: var(--gutter); }
   .line { font-size: min(7.4vw, 17svh); } /* the longest line stops short of the clock */
   /* Fewer lines, so the headline stays clear of the logo; 13rem keeps it short of the clock */
   .blurb { max-width: min(56ch, calc(100vw - 2 * var(--gutter) - 13rem)); }
-  .target { top: var(--gutter); right: calc(var(--gutter) + 8rem); }
-  .dots { top: var(--gutter); right: calc(var(--gutter) + 10rem + var(--tg)); width: 3rem; }
+  .dots { top: var(--gutter); right: calc(var(--tr) + var(--tg) + 2.5rem); width: 3rem; }
 }
 
 /* The smallest phones on their side: everything in the copy comes down a step to fit the height */
@@ -416,6 +429,7 @@ html.is-scrubbing .rule--v::after { left: -9px; width: 19px; }
 @media (min-width: 700px) and (min-height: 760px) and (max-aspect-ratio: 6/5) {
   .home {
     --fs: min(15.5vw, 10.5svh); --top: 12%; --dots: clamp(3.6rem, 5.4vw, 6.6rem);
+    --tr: calc(var(--rail) + var(--dots) + clamp(1.5rem, 4vw, 4rem)); --tt: var(--top);
     /* The target takes the height the copy leaves under the top margin
        (3.6: four headline lines; 11rem: the sentence and the gaps either side of the headline) */
     --tg: clamp(min(46vw, 30svh), calc(88svh - 3.6 * var(--fs) - 11rem - var(--gutter)), 58vw);
@@ -426,9 +440,9 @@ html.is-scrubbing .rule--v::after { left: -9px; width: 19px; }
      sentence's, and the day bar runs from the top of the target down to it. */
   .pips { right: calc(var(--gutter) + var(--pip) / 2 - 22px); width: 44px; padding-inline: 0; }
   .rule--v { right: calc(var(--gutter) + var(--pip) / 2 - var(--hair) / 2); top: var(--top); bottom: var(--gutter); height: auto; }
-  .target { top: var(--top); right: calc(var(--rail) + var(--dots) + clamp(1.5rem, 4vw, 4rem)); }
   .dots { width: var(--dots); top: calc(var(--top) + var(--tg) * .62); right: calc(var(--rail) - var(--dots) * .066); }
   .time { right: var(--rail); bottom: var(--gutter); }
+  .blurb { max-width: min(58ch, calc(100vw - var(--gutter) - var(--rail) - 14rem)); } /* short of the clock */
   .vert { display: none; }
 }
 
