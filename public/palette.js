@@ -27,14 +27,13 @@ const last = readLast();
 const choices = order.filter((name) => name !== last);
 apply(choices[Math.floor(Math.random() * choices.length)]);
 
-// Switching is a screen-print pull: the next colour is dragged across the page, then the page is
-// printed in it. Each pull also knocks the second plate (the ring colour, under the headline, logo,
-// target core and dots) a few pixels out of register, and the offsets add up, so the print drifts
-// a little further with every pull. It wanders within a cap rather than running off the page.
-const STEP = 3;   // px of drift per pull
+// Each switch is a new print run: the page cuts straight to the next colour, and the second
+// plate (the ring colour, under the headline, logo, target core and dots) lands a few pixels out of
+// register. The offsets add up, so the print drifts a little further with every switch. It wanders
+// within a cap rather than running off the page.
+const STEP = 3;   // px of drift per switch
 const LIMIT = 16; // px; the furthest the plate drifts from true
-let mx = 0, my = 0, pulling = false;
-const still = matchMedia("(prefers-reduced-motion: reduce)");
+let mx = 0, my = 0;
 
 function knock() {
   const angle = Math.random() * Math.PI * 2;
@@ -46,25 +45,12 @@ function knock() {
   root.style.setProperty("--my", `${my.toFixed(1)}px`);
 }
 
-function pull() {
-  if (pulling) return;
-  const next = order[(order.indexOf(root.dataset.theme) + 1) % order.length];
-  if (still.matches) { apply(next); knock(); return; }
-  pulling = true;
-  const sheet = document.createElement("i");
-  sheet.className = "pull";
-  sheet.setAttribute("aria-hidden", "true");
-  sheet.style.background = themeColour[next];
-  sheet.addEventListener("animationend", () => {
-    apply(next);
-    knock();
-    sheet.remove();
-    pulling = false;
-  }, { once: true });
-  document.body.append(sheet);
+function reprint() {
+  apply(order[(order.indexOf(root.dataset.theme) + 1) % order.length]);
+  knock();
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-  document.querySelector("[data-palette-switch]")?.addEventListener("click", pull);
+  document.querySelector("[data-palette-switch]")?.addEventListener("click", reprint);
 });
 })();

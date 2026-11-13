@@ -187,23 +187,13 @@ a { color: inherit; }
   .sign__word b { transition: none; }
 }
 
-/* ---------- Screen-print pulls (palette.js) ----------
+/* ---------- Screen-print registration (palette.js) ----------
    The second plate prints in the ring colour under the ink, offset by --mx/--my,
-   which drift a little further with every palette pull. */
+   which drift a little further with every palette switch. */
 :root { --mx: 0px; --my: 0px; }
 .line { text-shadow: var(--mx) var(--my) 0 var(--ring); }
 .logo { filter: drop-shadow(var(--mx) var(--my) 0 var(--ring)); }
 .pips b, .dots b, .dm b.on { box-shadow: var(--mx) var(--my) 0 var(--ring); }
-/* The pull: the next colour dragged across the page in hard steps, like a squeegee pass */
-.pull {
-  position: fixed; inset: 0 auto 0 0; width: 0; z-index: 9; pointer-events: none;
-  animation: pull 420ms steps(9, end) forwards;
-}
-.pull::after { /* the squeegee edge */
-  content: ""; position: absolute; top: 0; bottom: 0; right: 0; width: max(3px, .25vw);
-  background: var(--ink);
-}
-@keyframes pull { to { width: 100vw; } }
 
 /* ---------- Composition, after the mrrbt sleeve ---------- */
 .deco > * { position: absolute; display: block; margin: 0; pointer-events: none; }
