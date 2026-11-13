@@ -116,6 +116,12 @@ a { color: inherit; }
 .l { display: block; }
 .l--2 { padding-left: .5em; }
 .line em { font-style: italic; text-transform: none; letter-spacing: 0; }
+/* When the headline changes on its timer (palette.js), the new words wipe in like the load sequence */
+.line [data-does] { display: inline-block; }
+@media (prefers-reduced-motion: no-preference) {
+  .line .is-reprint { animation: wipe 220ms steps(5, end) both; }
+  .line .l.is-reprint { animation: wipe 220ms steps(5, end) both 140ms; }
+}
 .line .lc { text-transform: none; }
 .line a {
   text-decoration: underline;

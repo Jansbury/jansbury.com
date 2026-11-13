@@ -1,5 +1,6 @@
 // Each visit is a new print run: a random palette and a random headline, never the same as the
-// last visit. The three squares top-right step through the rest by hand.
+// last visit. The three squares top-right step through the rest by hand, and the headline also
+// moves on by itself every few seconds.
 // Loaded as a plain blocking script in <head> so the palette is set before the first paint
 // (no flash of the default orange); wrapped in a function to keep its names out of the global scope.
 (() => {
@@ -58,7 +59,7 @@ const LINES = [
 const LINE_KEY = "jansbury-last-line";
 let line = 0;
 
-function setLine(n) {
+function setLine(n, wipe = false) {
   line = n;
   const does = document.querySelector("[data-does]");
   const what = document.querySelector("[data-what]");
@@ -75,12 +76,36 @@ function setLine(n) {
     return part.split("_").map((bit, j) => (j % 2 ? wrap("span", bit, "lc") : bit));
   }));
   try { localStorage.setItem(LINE_KEY, n); } catch { /* storage blocked: repeats are possible */ }
+  if (wipe) {
+    // Replay the stepped wipe from the load sequence on the words that changed
+    for (const el of [does, what]) {
+      el.classList.remove("is-reprint");
+      void el.offsetWidth;
+      el.classList.add("is-reprint");
+    }
+  }
+}
+
+// Left alone, the headline moves on to the next line every few seconds. It waits while the pointer
+// is on the headline or the tab is hidden, and it stays put for visitors who prefer reduced motion.
+const CYCLE = 6000;
+const calm = matchMedia("(prefers-reduced-motion: reduce)");
+let cycle = 0;
+let held = false;
+
+function startCycle() {
+  clearInterval(cycle);
+  if (calm.matches) return;
+  cycle = setInterval(() => {
+    if (!held && !document.hidden) setLine((line + 1) % LINES.length, true);
+  }, CYCLE);
 }
 
 function reprint() {
   apply(order[(order.indexOf(root.dataset.theme) + 1) % order.length]);
   setLine((line + 1) % LINES.length);
   knock();
+  startCycle(); // a full pause before the next automatic change
 }
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -89,6 +114,11 @@ document.addEventListener("DOMContentLoaded", () => {
   try { lastLine = localStorage.getItem(LINE_KEY); } catch { /* storage blocked */ }
   const fresh = LINES.map((_, i) => i).filter((i) => String(i) !== lastLine);
   setLine(fresh[Math.floor(Math.random() * fresh.length)]);
+
+  const headline = document.querySelector(".line");
+  headline?.addEventListener("pointerenter", () => { held = true; });
+  headline?.addEventListener("pointerleave", () => { held = false; });
+  startCycle();
 
   const pips = document.querySelector("[data-palette-switch]");
   pips?.addEventListener("click", reprint);
