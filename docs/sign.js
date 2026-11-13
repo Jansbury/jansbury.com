@@ -2,25 +2,19 @@
 // together. Hover it (or tap, or focus and press Enter) and the dots drop into dot-matrix letters
 // beneath it, in the same 5x7 grid as the clock. Move away and they climb back into the line.
 //
-// The addresses (the profile and the email) are not in the HTML and not readable in this file: each is reversed and base64 encoded,
+// The address is not in the HTML and not readable in this file: it is reversed and base64 encoded,
 // and the href is only set the first time a person opens the line. Scrapers that read the source, or run
-// it without interacting, find no URLs. This keeps casual harvesting off them; it can't stop someone
+// it without interacting, find no address. This keeps casual harvesting off it; it can't stop someone
 // determined, since any visitor can open the line.
 const SOCIALS = [
-  ["instagram", "eXJ1YnNuYWovbW9jLm1hcmdhdHNuaS53d3cvLzpzcHR0aA=="],
-  ["email", "bW9jLnlydWJzbmFqQG9sbGVoOm90bGlhbQ=="],
+  ["contact", "bW9jLnlydWJzbmFqQG9sbGVoOm90bGlhbQ=="],
 ];
 
 const GLYPHS = {
   a: "00000 00000 01110 00001 01111 10001 01111",
-  e: "00000 00000 01110 10001 11111 10000 01110",
-  g: "00000 01111 10001 10001 01111 00001 01110",
-  i: "00100 00000 01100 00100 00100 00100 01110",
-  l: "01100 00100 00100 00100 00100 00100 01110",
-  m: "00000 00000 11010 10101 10101 10001 10001",
+  c: "00000 00000 01110 10001 10000 10001 01110",
   n: "00000 00000 10110 11001 10001 10001 10001",
-  r: "00000 00000 10110 11001 10000 10000 10000",
-  s: "00000 00000 01110 10000 01110 00001 11110",
+  o: "00000 00000 01110 10001 10001 10001 01110",
   t: "01000 01000 11100 01000 01000 01001 00110",
 };
 const WORD_GAP = 7;   // empty columns between names
