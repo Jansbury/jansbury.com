@@ -1,0 +1,344 @@
+@font-face {
+  font-family: "Instrument Serif";
+  src: url("/fonts/instrument-serif.woff2") format("woff2");
+  font-style: normal; font-weight: 400; font-display: swap;
+}
+@font-face {
+  font-family: "Instrument Serif";
+  src: url("/fonts/instrument-serif-italic.woff2") format("woff2");
+  font-style: italic; font-weight: 400; font-display: swap;
+}
+@font-face {
+  font-family: "Jost";
+  src: url("/fonts/jost-latin.woff2") format("woff2");
+  font-weight: 100 900; font-display: swap;
+}
+
+:root {
+  --black: #141414;
+  --bone: #f2ece0;
+  --orange: #da5328;
+  --amber: #e2ae4a;
+  --red: #ef6a7a;
+  --green: #52c08f;
+  --sky: #72b4f0;
+
+  --serif: "Instrument Serif", "Times New Roman", serif;
+  --sans: "Jost", "Futura", system-ui, sans-serif;
+  --gutter: clamp(1.25rem, 4.5vw, 5rem);
+  --hair: max(1.5px, .12vw);
+  --t: 240ms;
+  --ease: cubic-bezier(.2, .7, .2, 1);
+  --px: 0;
+  --py: 0;
+
+  /* Palette roles; palette.js picks one at random on each load */
+  --field: var(--orange);
+  --ink-full: var(--bone);
+  --ink: var(--ink-full);
+  --ring: var(--sky);
+  --core: var(--amber);
+}
+html[data-theme="orange"] { --field: var(--orange); --ink-full: var(--bone);  --ring: var(--sky);   --core: var(--amber); }
+html[data-theme="amber"]  { --field: var(--amber);  --ink-full: var(--black); --ring: var(--sky);   --core: var(--orange); }
+html[data-theme="red"]    { --field: var(--red);    --ink-full: var(--black); --ring: var(--amber); --core: var(--sky); }
+html[data-theme="green"]  { --field: var(--green);  --ink-full: var(--black); --ring: var(--red);   --core: var(--amber); }
+html[data-theme="sky"]    { --field: var(--sky);    --ink-full: var(--black); --ring: var(--amber); --core: var(--green); }
+
+/* Night in Auckland (clock.js sets data-night): the ink sinks a little into the field and the grain thickens */
+@property --ink { syntax: "<color>"; inherits: true; initial-value: #f2ece0; }
+html[data-night] { --ink: color-mix(in srgb, var(--ink-full) 80%, var(--field)); }
+html[data-night] body::after { opacity: .42; }
+
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; overflow-x: clip; }
+body {
+  margin: 0;
+  background: var(--field);
+  color: var(--ink);
+  font-family: var(--sans);
+}
+/* Print grain, oversized so it can shift without showing an edge */
+body::after {
+  content: ""; position: fixed; inset: -60px; z-index: 10; pointer-events: none;
+  opacity: .28; mix-blend-mode: soft-light;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.95' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+a { color: inherit; }
+::selection { background: var(--ink); color: var(--field); }
+:focus-visible { outline: 2px solid var(--ink); outline-offset: 6px; }
+
+/* ---------- The poster ---------- */
+.poster {
+  position: relative;
+  min-height: 100svh;
+  display: grid;
+  grid-template-rows: auto 1fr;
+  padding: var(--gutter);
+  overflow: clip;
+}
+
+.brand { position: relative; z-index: 2; display: grid; justify-content: start; row-gap: 1rem; }
+.logo-link { display: block; color: var(--ink); }
+.logo { display: block; width: clamp(9rem, 16vw, 19rem); height: auto; }
+.rule { display: block; background: var(--ink); }
+.rule--brand { width: clamp(4rem, 9vw, 9rem); height: var(--hair); }
+/* Auckland time, bottom right: large serif digits that cut over each minute */
+.time {
+  position: absolute; z-index: 2;
+  right: calc(var(--gutter) + clamp(1.5rem, 2.5vw, 3rem));
+  bottom: calc(var(--gutter) + 1.75rem);
+  text-align: right;
+}
+.time[hidden] { display: none; }
+.time p { margin: 0; }
+.time__k { font-family: var(--sans); font-size: clamp(.8rem, .7rem + .3vw, 1.1rem); }
+/* Dot-matrix digits (clock.js builds them): 5x7 cells, one em tall */
+.time__v { font-size: clamp(2.4rem, 4.2vw, 6rem); line-height: 1; margin-block: .18em .12em !important; }
+.dm { display: flex; justify-content: flex-end; gap: .16em; height: 1em; }
+.dm i { display: grid; grid-template-columns: repeat(5, 1fr); grid-template-rows: repeat(7, 1fr); width: .714em; }
+.dm i.colon { grid-template-columns: 1fr; width: .143em; }
+.dm b { border-radius: 50%; background: var(--ink); scale: 0; transition: scale var(--t) var(--ease); }
+.dm b.on { scale: .8; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+@media (prefers-reduced-motion: reduce) { .dm b { transition: none; } }
+.time__diff { font-family: var(--serif); font-style: italic; font-size: clamp(1rem, .85rem + .5vw, 1.6rem); }
+
+/* Headline: upright caps, italic connectives */
+.line {
+  position: relative; z-index: 2;
+  align-self: end; justify-self: start; /* only as wide as the words, so it never covers the dots */
+  margin: 0;
+  font-family: var(--serif); font-weight: 400;
+  font-size: clamp(3.2rem, 8.6vw, 12rem);
+  line-height: .9; letter-spacing: -.012em;
+  text-transform: uppercase;
+}
+.l { display: block; }
+.l--2 { padding-left: .9em; }
+.line em { font-style: italic; text-transform: none; letter-spacing: 0; }
+.line a {
+  text-decoration: underline;
+  text-decoration-thickness: .035em;
+  text-underline-offset: .09em;
+  transition: color var(--t) var(--ease), background-color var(--t) var(--ease);
+}
+.line a:hover, .line a:focus-visible { background: var(--ink); color: var(--field); text-decoration-color: transparent; }
+
+/* Headline plus a sentence of plain copy */
+.copy {
+  position: relative; z-index: 2;
+  align-self: end; justify-self: start;
+  display: grid; row-gap: clamp(1.25rem, 2.4vw, 2.75rem);
+}
+.copy .line { align-self: auto; justify-self: start; }
+.blurb {
+  margin: 0; max-width: 31ch;
+  font-family: var(--sans); font-size: clamp(1.05rem, .9rem + .55vw, 1.6rem); line-height: 1.4;
+  text-wrap: pretty;
+}
+.blurb a {
+  text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: .2em;
+  transition: color var(--t) var(--ease), background-color var(--t) var(--ease);
+}
+.blurb a:hover, .blurb a:focus-visible { background: var(--ink); color: var(--field); text-decoration-color: transparent; }
+
+/* The signature line (sign.js): a short line of packed dots that rise into dot-matrix names.
+   Every size is in cells of --p, the dot pitch. */
+.sign {
+  --p: clamp(3px, .28vw, 5px);
+  position: absolute; z-index: 3;
+  right: var(--gutter); bottom: calc(var(--gutter) - var(--p) / 2);
+  width: calc(var(--cols) * var(--p)); height: calc(10 * var(--p));
+  pointer-events: none;
+}
+.sign.is-open { pointer-events: auto; }
+.sign__line {
+  position: absolute; right: 0; top: calc(9.5 * var(--p) - 22px);
+  width: calc(var(--line) * var(--p)); height: 44px;
+  padding: 0; border: 0; background: none; cursor: pointer;
+  pointer-events: auto;
+}
+.sign__word {
+  position: absolute; top: 0; left: calc(var(--at) * var(--p));
+  width: calc(var(--w) * var(--p)); height: calc(7 * var(--p));
+  pointer-events: none;
+}
+.is-open .sign__word { pointer-events: auto; }
+.sign__word b {
+  position: absolute; left: 0; top: 0;
+  width: var(--p); height: var(--p); border-radius: 50%;
+  background: var(--ink);
+  translate: calc(var(--rx) * var(--p)) calc(var(--ry) * var(--p));
+  scale: .55;
+  transition: translate 460ms var(--ease) calc(var(--d) * 5ms), scale var(--t) var(--ease);
+}
+.is-open .sign__word b { translate: calc(var(--x) * var(--p)) calc(var(--y) * var(--p)); scale: .85; }
+.is-open .sign__word:hover b, .is-open .sign__word:focus-visible b { scale: 1.1; }
+
+/* Make room above the line for the names */
+@media (min-width: 761px) { .poster:has(.sign) .time { bottom: calc(var(--gutter) + 3.5rem); } }
+@media (max-width: 760px) {
+  /* Phones: the line sits under the clock instead of in the corner */
+  .sign { bottom: auto; top: calc(18% + 44vw + 8rem); right: calc(var(--gutter) + 1rem); }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .sign { animation: cut-in 1ms both 1180ms; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sign__word b { transition: none; }
+}
+
+/* ---------- Composition, after the mrrbt sleeve ---------- */
+.deco > * { position: absolute; display: block; margin: 0; pointer-events: none; }
+
+/* The three squares are also the palette switch */
+.pips {
+  position: absolute; z-index: 3;
+  right: calc(var(--gutter) - .75rem); top: calc(var(--gutter) - .75rem);
+  display: grid; gap: .55vw; justify-items: center; align-content: center;
+  min-width: 44px; min-height: 44px;
+  padding: .75rem;
+  border: 0; background: none; cursor: pointer;
+}
+.pips b { display: block; width: clamp(.5rem, .8vw, 1rem); aspect-ratio: 1; background: var(--ink); transition: rotate var(--t) var(--ease); }
+.pips:hover b:nth-child(2), .pips:focus-visible b:nth-child(2) { rotate: 45deg; }
+
+/* The brand's target mark, in the site palette */
+.target {
+  width: clamp(8rem, 17vw, 22rem); aspect-ratio: 1; border-radius: 50%;
+  right: 24%; top: 26%;
+  background: radial-gradient(circle, var(--core) 0 44%, var(--ring) 44.5%);
+}
+/* The target is also Auckland's clock face (clock.js sets --hr and --mn) */
+.target::after {
+  content: ""; position: absolute; left: 50%; top: 50%;
+  width: 5%; aspect-ratio: 1; border-radius: 50%;
+  translate: -50% -50%; background: var(--ink);
+}
+.hand {
+  position: absolute; left: 50%; bottom: 50%;
+  width: max(2px, .22vw); margin-left: calc(max(2px, .22vw) / -2);
+  background: var(--ink);
+  transform-origin: 50% 100%;
+}
+.hand--h { height: 24%; rotate: var(--hr, 0deg); }
+.hand--m { height: 37%; rotate: var(--mn, 0deg); }
+
+.vert {
+  right: calc(24% + clamp(8rem, 17vw, 22rem) / 2 - .5ch);
+  top: calc(26% + clamp(8rem, 17vw, 22rem) + 2.5rem);
+  writing-mode: vertical-rl; text-orientation: upright;
+  font-family: var(--sans); font-weight: 400;
+  font-size: clamp(.8rem, .7rem + .4vw, 1.2rem);
+  letter-spacing: .6em;
+}
+
+/* Dot grid: hover (or tap) and only the dots that spell "Hi" stay */
+.dots {
+  width: clamp(3.6rem, 5.4vw, 6.6rem); aspect-ratio: 1;
+  right: 13%; bottom: 32%;
+  display: grid; grid-template-columns: repeat(5, 1fr);
+  pointer-events: auto; cursor: default;
+}
+/* eggs.js sets --dx/--dy in cells; translate % is the dot's own cell */
+.dots b {
+  display: block; border-radius: 50%; background: var(--ink); scale: .34;
+  translate: calc(var(--dx, 0) * 100%) calc(var(--dy, 0) * 100%);
+  transition: translate 520ms var(--ease) calc(var(--i, 0) * 12ms), scale var(--t) var(--ease);
+}
+.dots.is-hi b { scale: .62; }
+@media (prefers-reduced-motion: reduce) { .dots b { transition: none; } }
+
+/* The vertical rule is a day bar: dashed track, solid fill up to now in Auckland */
+.rule--v {
+  width: var(--hair); height: 52%; right: calc(var(--gutter) + .4vw); top: 24%;
+  background: repeating-linear-gradient(to bottom, var(--ink) 0 2px, transparent 2px 7px);
+}
+.rule--v::before, .rule--v::after { content: ""; position: absolute; left: 0; background: var(--ink); }
+.rule--v::before { top: 0; width: 100%; height: calc(var(--day, 0) * 100%); }
+.rule--v::after { top: calc(var(--day, 0) * 100%); left: -5px; width: 11px; height: var(--hair); }
+/* Drag along the day bar to scrub Auckland's day; let go and it returns to now */
+.scrub {
+  position: absolute; top: -12px; bottom: -12px; left: -22px; width: 44px;
+  pointer-events: auto; cursor: ns-resize; touch-action: none;
+}
+.hours b {
+  position: absolute; left: 10px; translate: 0 -50%; /* outside the line, clear of the clock */
+  font-family: var(--sans); font-size: clamp(.7rem, .62rem + .2vw, .9rem);
+  font-variant-numeric: tabular-nums;
+  opacity: 0; transition: opacity var(--t) var(--ease);
+}
+.hours b:nth-child(1) { top: 0; }
+.hours b:nth-child(2) { top: 25%; }
+.hours b:nth-child(3) { top: 50%; }
+.hours b:nth-child(4) { top: 75%; }
+.hours b:nth-child(5) { top: 100%; }
+.rule--v:has(.scrub:hover) .hours b, html.is-scrubbing .hours b { opacity: 1; }
+html.is-scrubbing .rule--v::after { left: -9px; width: 19px; }
+
+.rule--h { height: var(--hair); width: clamp(4rem, 7vw, 8rem); right: var(--gutter); bottom: var(--gutter); }
+
+/* ---------- Pointer parallax (parallax.js sets --px/--py from -1 to 1) ---------- */
+.target, .dots, .pips, .vert, .rule--v, .rule--h, .line {
+  translate: calc(var(--px) * var(--depth, 0px)) calc(var(--py) * var(--depth, 0px));
+}
+.target { --depth: 34px; }
+.vert   { --depth: 22px; }
+.dots   { --depth: 0px; }  /* hover target: must not run from the cursor */
+.pips   { --depth: 0px; }  /* button: same reason */
+.rule--v { --depth: 0px; }  /* drag target */
+.rule--h { --depth: 8px; }
+.line   { --depth: -6px; }
+
+/* ---------- Assembly on load: hard cuts, in reading order ---------- */
+@media (prefers-reduced-motion: no-preference) {
+  /* The logo writes itself: a smooth left-to-right reveal, slanted like the pen */
+  .logo { animation: write 1100ms cubic-bezier(.5, .1, .35, 1) both 60ms; }
+  body::after { animation: breathe 1.2s steps(3, end) infinite; transition: opacity 600ms var(--ease); }
+  html { transition: --ink 600ms var(--ease); }
+  .rule--brand { animation: draw-x 240ms steps(6, end) both 180ms; transform-origin: 0 50%; }
+  .l--1 { animation: wipe 220ms steps(5, end) both 340ms; }
+  .l--2 { animation: wipe 220ms steps(5, end) both 520ms; }
+  .l--3 { animation: wipe 220ms steps(5, end) both 700ms; }
+  .blurb { animation: cut-in 1ms both 860ms; }
+  .target { animation: cut-in 1ms both 900ms; }
+  .rule--v { animation: draw-y 280ms steps(7, end) both 960ms; transform-origin: 50% 0; }
+  .vert, .pips, .time { animation: cut-in 1ms both 1080ms; }
+  .dots, .rule--h { animation: cut-in 1ms both 1180ms; }
+}
+@keyframes cut-in { from { visibility: hidden; } }
+@keyframes write {
+  from { clip-path: polygon(0 0, 0 0, -12% 100%, -12% 100%); }
+  to   { clip-path: polygon(0 0, 112% 0, 100% 100%, -12% 100%); }
+}
+@keyframes breathe {
+  0%   { translate: 0 0; }
+  33%  { translate: -23px 11px; }
+  66%  { translate: 14px -19px; }
+  100% { translate: 0 0; }
+}
+@keyframes wipe   { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(-10% -2% -10% 0); } }
+@keyframes draw-x { from { scale: 0 1; } }
+@keyframes draw-y { from { scale: 1 0; } }
+
+/* ---------- Narrow screens: headline leads, decoration regroups above it ---------- */
+@media (max-width: 760px) {
+  .line { font-size: 12.6vw; }
+  .l--2 { padding-left: .5em; }
+  .target { width: 44vw; right: 8%; top: 18%; }
+  .vert { display: none; }
+  .dots { right: auto; left: var(--gutter); top: 34%; bottom: auto; width: 4.6rem; }
+  .rule--v { height: 34%; top: 14%; }
+  .time { right: calc(var(--gutter) + 1rem); bottom: auto; top: calc(18% + 44vw + 1.5rem); }
+  .rule--h { display: none; }
+}
+
+/* Short screens: the vertical name would run into the headline */
+@media (max-height: 760px) { .vert { display: none; } }
+
+@media (min-width: 1800px) { html { font-size: 125%; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .line a { transition: none; }
+}
