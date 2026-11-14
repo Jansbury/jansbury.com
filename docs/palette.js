@@ -29,7 +29,7 @@ const choices = order.filter((name) => name !== last);
 apply(choices[Math.floor(Math.random() * choices.length)]);
 
 // Each switch is a new print run: the page cuts straight to the next colour, and the second
-// plate (the ring colour, under the headline, logo and target core) is knocked a little further
+// plate (the ring colour, under the headline and logo) is knocked a little further
 // out of register, on top of the offset clock.js sets from the time. The knocks add up, within a
 // cap. Values are in the same units as the clock's (site.css turns them into pixels).
 const STEP = 3;
