@@ -39,6 +39,9 @@
   /* The inner right-hand line in the bespoke narrow and tall layouts: the clock, the dots
      and the target all end on it, a step in from the day bar */
   --rail: calc(var(--gutter) + var(--pip) + .75rem);
+  /* The day bar starts at least this far down, clear of the colour squares above it
+     (their foot: the gutter, plus their padding, three squares and two gaps, then room to breathe) */
+  --bar-clear: calc(var(--gutter) + .75rem + 3 * var(--pip) + 1.1vw + clamp(2.5rem, 4vw, 4rem));
   /* Where the target sits: its right and top. The labels that hang off it follow these. */
   --tr: 21%;
   --tt: 24%;
@@ -269,7 +272,7 @@ button { -webkit-tap-highlight-color: transparent; }
     var(--core) 0 calc(var(--tg) * .311), var(--ring) 0);
 }
 /* The target is also a clock face (clock.js sets --hr, --mn and --sec). The hour and minute hands
-   are black batons with an inlay in the page's colour; the seconds hand is a red rod with a disc
+   are plain black batons; the seconds hand is a red rod with a disc
    near its tip, after the railway clock, sweeping round once a minute. Sizes are in parts of the
    target, so the hands grow with it. */
 .target::after {
@@ -289,11 +292,6 @@ button { -webkit-tap-highlight-color: transparent; }
 .hand--h, .hand--m { --tail: .06; }
 .hand--h { --w: .042; --len: .25; rotate: var(--hr, 0deg); }
 .hand--m { --w: .032; --len: .39; rotate: var(--mn, 0deg); }
-/* The inlay: the page's colour down the middle, short of both ends */
-.hand--h::before, .hand--m::before {
-  content: ""; position: absolute; inset: 24% 30% 22%;
-  background: var(--field);
-}
 .hand--s {
   --tail: .12; --w: .011; --len: .37;
   background: var(--signal);
@@ -341,7 +339,7 @@ button { -webkit-tap-highlight-color: transparent; }
 /* The vertical rule is a day bar: dashed track, solid fill up to now in Auckland */
 .rule--v {
   position: absolute; display: block; pointer-events: none; /* only the handle inside takes input */
-  width: var(--hair); height: 52%; right: calc(var(--gutter) + .4vw); top: var(--tt);
+  width: var(--hair); height: 52%; right: calc(var(--gutter) + .4vw); top: max(var(--tt), var(--bar-clear));
   background: repeating-linear-gradient(to bottom, var(--ink) 0 2px, transparent 2px 7px);
 }
 .rule--v::before, .rule--v::after { content: ""; position: absolute; left: 0; background: var(--ink); }
@@ -459,6 +457,7 @@ html.is-scrubbing .rule--v::after { left: -9px; width: 19px; }
   /* Fewer lines, so the headline stays clear of the logo; 15rem keeps it clear of the clock */
   .blurb { max-width: min(56ch, calc(100vw - 2 * var(--gutter) - 15rem)); }
   .dots { top: var(--gutter); right: calc(var(--tr) + var(--tg) + 2.5rem); width: 3rem; }
+  .rule--v { height: max(3rem, calc(52svh - var(--bar-clear))); } /* ends above the clock */
 }
 
 /* The smallest phones on their side: everything in the copy comes down a step to fit the height */
@@ -485,7 +484,7 @@ html.is-scrubbing .rule--v::after { left: -9px; width: 19px; }
   /* The same two right-hand lines as the narrow layout. The clock's foot is level with the
      sentence's, and the day bar runs from the top of the target down to it. */
   .pips { right: calc(var(--gutter) + var(--pip) / 2 - 22px); width: 44px; padding-inline: 0; }
-  .rule--v { right: calc(var(--gutter) + var(--pip) / 2 - var(--hair) / 2); top: var(--top); bottom: var(--gutter); height: auto; }
+  .rule--v { right: calc(var(--gutter) + var(--pip) / 2 - var(--hair) / 2); top: max(var(--top), var(--bar-clear)); bottom: var(--gutter); height: auto; }
   .dots { width: var(--dots); top: calc(var(--top) + var(--tg) * .62); right: calc(var(--rail) - var(--dots) * .04); }
   .time { right: var(--rail); bottom: var(--gutter); }
   .blurb { max-width: min(58ch, calc(100vw - var(--gutter) - var(--rail) - 14rem)); } /* short of the clock */
