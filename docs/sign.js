@@ -16,7 +16,16 @@ const GLYPHS = {
   n: "00000 00000 10110 11001 10001 10001 10001",
   o: "00000 00000 01110 10001 10001 10001 01110",
   t: "01000 01000 11100 01000 01000 01001 00110",
+  // for the hint
+  e: "00000 00000 01110 10001 11111 10000 01110",
+  g: "00000 01111 10001 10001 01111 00001 01110",
+  h: "10000 10000 10110 11001 10001 10001 10001",
+  i: "00100 00000 01100 00100 00100 00100 01110",
+  u: "00000 00000 10001 10001 10001 10011 01101",
+  "?": "01110 10001 00001 00010 00100 00000 00100",
+  " ": "00000 00000 00000 00000 00000 00000 00000",
 };
+const HINT = "get in touch?"; // what the peek spells; opening the line spells the link's name
 const WORD_GAP = 7;   // empty columns between names
 const LINE_COLS = 32; // length of the resting line, in cells
 const DROP = 1;       // rows from the line down to the top of the letters
@@ -38,6 +47,18 @@ const words = SOCIALS.map(([name, code]) => ({ name, code, ...letterDots(name) }
 const total = words.reduce((sum, w) => sum + w.cols, 0) + WORD_GAP * (words.length - 1);
 const count = words.reduce((sum, w) => sum + w.dots.length, 0);
 const links = [];
+const hint = letterDots(HINT);
+
+// Dots for `word`, each placed in its letter (x, y) and packed into the resting line (rx, ry),
+// relative to where the word starts (`start` columns in). `k0` and `n` spread them along the line.
+function placeDots(el, word, start, k0, n) {
+  word.dots.forEach(([x, y], k) => {
+    const b = document.createElement("b");
+    const rx = ((k0 + k) / (n - 1)) * (LINE_COLS - 1) - start;
+    b.style.cssText = `--x:${x};--y:${y};--rx:${rx.toFixed(2)};--ry:${-DROP};--d:${start + x}`;
+    el.append(b);
+  });
+}
 
 if (sign) {
   sign.style.setProperty("--cols", Math.max(total, LINE_COLS));
@@ -54,22 +75,24 @@ if (sign) {
     a.rel = "noopener noreferrer nofollow";
     a.style.setProperty("--at", start);
     a.style.setProperty("--w", w.cols);
-    // Each dot knows its place in the letter (x, y) and its place packed into the line (rx, ry),
-    // both relative to its word, in cells. The line is DROP rows above the letters.
-    w.dots.forEach(([x, y]) => {
-      const b = document.createElement("b");
-      const rx = (k / (count - 1)) * (LINE_COLS - 1) - start;
-      b.style.cssText = `--x:${x};--y:${y};--rx:${rx.toFixed(2)};--ry:${-DROP};--d:${start + x}`;
-      a.append(b);
-      k++;
-    });
+    // The line is DROP rows above the letters
+    placeDots(a, w, start, k, count);
+    k += w.dots.length;
     links.push([a, w.code]);
     sign.append(a);
     start += w.cols + WORD_GAP;
   });
+  // The hint: its own dots, hidden in the line until a peek, and not a link
+  const h = document.createElement("span");
+  h.className = "sign__word sign__hint";
+  h.setAttribute("aria-hidden", "true");
+  h.style.setProperty("--at", 0);
+  h.style.setProperty("--w", hint.cols / 2); // drawn at half size (site.css)
+  placeDots(h, hint, 0, 0, hint.dots.length);
+  sign.append(h);
 }
 
-// A peek (hints.js) shows the letters for a moment without setting any address. If the visitor
+// A peek (hints.js) spells the hint for a moment, without setting any address. If the visitor
 // opens the line during it, theirs takes over and stays.
 let peekTimer = 0;
 function peek(ms) {
