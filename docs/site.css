@@ -387,6 +387,9 @@ html.is-scrubbing .hand--m, html.is-scrubbing .hand--h { transition: none; } /* 
 .hours b:nth-child(5) { top: 100%; }
 html.is-scrubbing .hours { opacity: 1; }
 @media (hover: hover) { .rule--v:has(.scrub:hover) .hours { opacity: 1; } }
+/* While the ticks show they are the track: the dashes, at a different spacing, step aside */
+html.is-scrubbing .rule--v { background: none; }
+@media (hover: hover) { .rule--v:has(.scrub:hover) { background: none; } }
 html.is-scrubbing .rule--v::after { left: -9px; width: 19px; }
 
 /* ---------- Assembly on load: hard cuts, in reading order ---------- */
