@@ -206,6 +206,26 @@ async function checkWeather() {
   root.style.setProperty("--sec", `${-(t.getSeconds() + t.getMilliseconds() / 1000)}s`);
 }
 
+// The hour and minute hands move with a little character (site.css gives them a springy settle).
+// Their angles keep counting past 360deg, so a move always takes the short way round.
+// `handsHeld` stops render() moving them: before the target has appeared, and while the rest of
+// the clock eases back after a drag (the hands spring straight back instead).
+const turned = { hr: null, mn: null };
+let handsHeld = true;
+function turn(name, deg) {
+  const prev = turned[name];
+  // The first move goes forward from 12, so the hands sweep round to the time on load
+  const next = prev === null ? deg : prev + ((((deg - prev) % 360) + 540) % 360) - 180;
+  turned[name] = next;
+  root.style.setProperty(`--${name}`, `${next}deg`);
+}
+function setHands(now) {
+  turn("hr", ((now.getHours() % 12) + now.getMinutes() / 60) * 30);
+  turn("mn", now.getMinutes() * 6);
+}
+// The target cuts in at 900ms (site.css); the hands set off just after
+setTimeout(() => { handsHeld = false; render(); }, still.matches ? 0 : 950);
+
 // Scrubbing shifts every clock by `shift` ms; letting go eases it back to 0.
 let shift = 0;
 let scrubbing = false;
@@ -218,8 +238,7 @@ function render() {
   const apart = gap(now, a);
 
   // Hands: the visitor's local time
-  root.style.setProperty("--hr", `${((now.getHours() % 12) + now.getMinutes() / 60) * 30}deg`);
-  root.style.setProperty("--mn", `${now.getMinutes() * 6}deg`);
+  if (!handsHeld) setHands(now);
   root.style.setProperty("--day", (minute / DAY).toFixed(4));
 
   // The plate (site.css turns units into pixels for the screen size)
@@ -284,11 +303,15 @@ function release() {
   scrubbing = false;
   root.classList.remove("is-scrubbing");
   if (still.matches) { shift = 0; render(); return; }
+  // The hands spring straight back to now; the rest of the clock eases after them
+  setHands(new Date());
+  handsHeld = true;
   const from = shift;
   const start = performance.now();
   const step = (t) => {
     const k = Math.min(1, (t - start) / EASE_BACK);
     shift = from * (1 - k) ** 3;
+    if (k === 1) handsHeld = false;
     render();
     if (k < 1) easing = requestAnimationFrame(step);
   };
