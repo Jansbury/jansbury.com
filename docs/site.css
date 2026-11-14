@@ -283,16 +283,17 @@ button { -webkit-tap-highlight-color: transparent; }
 .dots {
   width: clamp(3.6rem, 5.4vw, 6.6rem); aspect-ratio: 1;
   right: 11%; top: calc(var(--tt) + var(--tg) * .62); /* tied to the target, clear of the clock */
-  display: grid; grid-template-columns: repeat(5, 1fr);
+  display: grid; grid-template-columns: repeat(7, 1fr);
   pointer-events: auto; cursor: default;
 }
-/* eggs.js sets --dx/--dy in cells; translate % is the dot's own cell */
+/* eggs.js: a 7x7 display. Dots never move. Drawing, the lit ones swell and the rest fade back to a
+   faint grid, in a wave out from the middle (--d), so one picture morphs into the next */
 .dots b {
-  display: block; border-radius: 50%; background: var(--ink); scale: .34;
-  translate: calc(var(--dx, 0) * 100%) calc(var(--dy, 0) * 100%);
-  transition: translate 520ms var(--ease) calc(var(--i, 0) * 12ms), scale var(--t) var(--ease);
+  display: block; border-radius: 50%; background: var(--ink); scale: .44;
+  transition: scale 420ms var(--ease) calc(var(--d, 0) * 40ms), opacity 420ms var(--ease) calc(var(--d, 0) * 40ms);
 }
-.dots.is-spelling b { scale: .62; }
+.dots.is-spelling b { scale: .36; opacity: .22; }
+.dots.is-spelling b.on { scale: .86; opacity: 1; }
 @media (prefers-reduced-motion: reduce) { .dots b { transition: none; } }
 
 /* The vertical rule is a day bar: dashed track, solid fill up to now in Auckland */
@@ -375,8 +376,8 @@ html.is-scrubbing .rule--v::after { left: -9px; width: 19px; }
   /* The hour labels go inside the day bar, where the margin is too thin to hold them */
   .hours b { left: auto; right: 7px; }
   /* The dots sit on the target's centre line, where its hands turn */
-  /* (.066 of the grid: the outer dots sit that far inside its box, so this puts them on the margin) */
-  .dots { right: auto; left: calc(var(--gutter) - 4.6rem * .066); width: 4.6rem; top: calc(var(--top) + var(--tg) / 2 - 2.3rem); }
+  /* (.04 of the grid: the outer dots sit that far inside its box, so this puts them on the margin) */
+  .dots { right: auto; left: calc(var(--gutter) - 4.6rem * .04); width: 4.6rem; top: calc(var(--top) + var(--tg) / 2 - 2.3rem); }
 }
 /* Taller still, the headline stacks into four lines. The height that needs grows with the width
    (about 91vw + 25.5rem), which a media query can't say, so the break steps up in bands.
@@ -434,7 +435,7 @@ html.is-scrubbing .rule--v::after { left: -9px; width: 19px; }
      sentence's, and the day bar runs from the top of the target down to it. */
   .pips { right: calc(var(--gutter) + var(--pip) / 2 - 22px); width: 44px; padding-inline: 0; }
   .rule--v { right: calc(var(--gutter) + var(--pip) / 2 - var(--hair) / 2); top: var(--top); bottom: var(--gutter); height: auto; }
-  .dots { width: var(--dots); top: calc(var(--top) + var(--tg) * .62); right: calc(var(--rail) - var(--dots) * .066); }
+  .dots { width: var(--dots); top: calc(var(--top) + var(--tg) * .62); right: calc(var(--rail) - var(--dots) * .04); }
   .time { right: var(--rail); bottom: var(--gutter); }
   .blurb { max-width: min(58ch, calc(100vw - var(--gutter) - var(--rail) - 14rem)); } /* short of the clock */
   .vert { display: none; }
