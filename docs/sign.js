@@ -69,8 +69,9 @@ if (sign) {
   words.forEach((w) => {
     const a = document.createElement("a");
     a.className = "sign__word";
-    a.setAttribute("aria-label", w.name);
+    a.setAttribute("aria-label", "Email Jans");
     a.tabIndex = -1;
+    a.setAttribute("aria-hidden", "true"); // until the line opens and it has an address
     a.target = "_blank";
     a.rel = "noopener noreferrer nofollow";
     a.style.setProperty("--at", start);
@@ -110,7 +111,7 @@ function setOpen(open) {
     a.href = [...atob(code)].reverse().join("");
     if (a.protocol === "mailto:") a.removeAttribute("target"); // opens the mail app, not a new tab
   });
-  links.forEach(([a]) => { a.tabIndex = open ? 0 : -1; });
+  links.forEach(([a]) => { a.tabIndex = open ? 0 : -1; a.toggleAttribute("aria-hidden", !open); });
   sign.classList.toggle("is-open", open);
   toggle.setAttribute("aria-expanded", String(open));
 }
