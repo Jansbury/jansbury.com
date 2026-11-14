@@ -101,13 +101,16 @@ const LETTERS = {
   A: bits("01110 10001 10001 11111 10001 10001 10001"),
   P: bits("11110 10001 10001 11110 10000 10000 10000"),
   M: bits("10001 11011 10101 10101 10001 10001 10001"),
+  H: bits("10001 10001 10001 11111 10001 10001 10001"),
+  D: bits("11110 10001 10001 10001 10001 10001 11110"),
 };
 
 // 12-hour time, as Auckland says it: "7:05pm"
 const twelve = (h) => h % 12 || 12;
 const say = (h, m) => `${twelve(h)}:${pad(m)}${h < 12 ? "am" : "pm"}`;
 
-// Builds the matrix inside `el` and returns a function that draws a time on it.
+// Builds the matrix inside `el` and returns a function that draws on it: four digits (a space is
+// blank), two small letters beside them, and the same thing as text for screen readers.
 function createMatrix(el) {
   const spoken = document.createElement("span"); // the time as text, for screen readers
   spoken.className = "sr";
@@ -133,20 +136,41 @@ function createMatrix(el) {
     ap.append(g);
     return [...g.children];
   });
-  light(half[1], LETTERS.M);
   matrix.append(ap);
   el.replaceChildren(spoken, matrix);
 
-  return (h, m) => {
-    const text = say(h, m);
+  return (four, top, bottom, text) => {
     if (spoken.textContent === text) return;
     spoken.textContent = text;
-    const hh = String(twelve(h)).padStart(2, " ");
-    [hh[0], hh[1], ...pad(m)].forEach((d, n) => light(digits[n], d === " " ? BLANK : GLYPHS[d]));
-    light(half[0], h < 12 ? LETTERS.A : LETTERS.P);
+    [...four].forEach((d, n) => light(digits[n], d === " " ? BLANK : GLYPHS[d]));
+    light(half[0], LETTERS[top]);
+    light(half[1], LETTERS[bottom]);
   };
 }
-const drawTime = timeEl ? createMatrix(timeEl) : null;
+const draw = timeEl ? createMatrix(timeEl) : null;
+const drawTime = (h, m) =>
+  draw(String(twelve(h)).padStart(2, " ") + pad(m), h < 12 ? "A" : "P", "M", say(h, m));
+
+// Someone in New Zealand already knows the time here, so for them the clock counts the time since
+// the site last changed instead: hours and minutes (H M beside the digits), and past 99 hours, days
+// and hours (D H). The page's Last-Modified header is when it was deployed. Browsers that don't
+// get one report the time the page loaded; then there's nothing to count and the clock stays a clock.
+const loaded = Date.now();
+const deployed = Date.parse(document.lastModified);
+const countsUp = IN_NZ && Number.isFinite(deployed) && Math.abs(loaded - deployed) > 5000;
+const plural = (n, word) => `${n} ${word}${n === 1 ? "" : "s"}`;
+function drawSince(now) {
+  const mins = Math.max(0, Math.floor((now - deployed) / 60_000));
+  const h = Math.floor(mins / 60);
+  if (h < 100) {
+    draw(String(h).padStart(2, " ") + pad(mins % 60), "H", "M",
+      `${h ? plural(h, "hour") + " " : ""}${plural(mins % 60, "minute")} since my last git commit`);
+  } else {
+    const d = Math.min(99, Math.floor(h / 24));
+    draw(String(d).padStart(2, " ") + pad(h % 24), "D", "H",
+      `${plural(d, "day")} ${plural(h % 24, "hour")} since my last git commit`);
+  }
+}
 
 // The temperature in Auckland now, from Open-Meteo (free, no key, sends nothing about the visitor:
 // the request carries only Auckland's coordinates). The reading, and when the next request is due,
@@ -259,10 +283,15 @@ function render() {
     handle.setAttribute("aria-valuetext", `${say(a.h, a.m)} in Auckland`);
   }
   if (box) {
-    drawTime(a.h, a.m);
     // Live time only: a scrubbed hour shouldn't show today's temperature
     const temp = temperature === null || scrubbing ? "" : `, ${Math.round(temperature)}°C`;
-    labelEl.textContent = (night ? "Asleep in Auckland, NZ" : "Auckland, NZ") + temp;
+    if (countsUp && !shift) {
+      drawSince(Date.now());
+      labelEl.textContent = "Since my last git commit";
+    } else {
+      drawTime(a.h, a.m);
+      labelEl.textContent = (night ? "Asleep in Auckland, NZ" : "Auckland, NZ") + temp;
+    }
     diffEl.textContent = scrubbing && apart.offset !== 0
       ? `${say(now.getHours(), now.getMinutes())} where you are`
       : inWords(apart) + (temperature === null || !fahrenheit
