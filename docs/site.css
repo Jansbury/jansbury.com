@@ -272,7 +272,7 @@ button { -webkit-tap-highlight-color: transparent; }
     var(--core) 0 calc(var(--tg) * .311), var(--ring) 0);
 }
 /* The target is also a clock face (clock.js sets --hr, --mn and --sec). The hour and minute hands
-   are plain black batons; the seconds hand is a red rod with a disc
+   are plain black batons, the hour short and heavier, the minute long and fine; the seconds hand is a red rod with a disc
    near its tip, after the railway clock, sweeping round once a minute. Sizes are in parts of the
    target, so the hands grow with it. */
 .target::after {
@@ -289,9 +289,9 @@ button { -webkit-tap-highlight-color: transparent; }
   background: var(--black);
   transform-origin: 50% calc(100% - var(--tl));
 }
-.hand--h, .hand--m { --tail: .06; }
-.hand--h { --w: .042; --len: .25; rotate: var(--hr, 0deg); }
-.hand--m { --w: .032; --len: .39; rotate: var(--mn, 0deg); }
+.hand--h, .hand--m { --tail: .035; }
+.hand--h { --w: .026; --len: .22; rotate: var(--hr, 0deg); } /* short and a little heavier */
+.hand--m { --w: .014; --len: .41; rotate: var(--mn, 0deg); } /* long and fine */
 .hand--s {
   --tail: .12; --w: .011; --len: .37;
   background: var(--signal);
