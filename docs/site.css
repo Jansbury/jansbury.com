@@ -109,6 +109,7 @@ button { -webkit-tap-highlight-color: transparent; }
   bottom: calc(var(--gutter) + 1.75rem);
   text-align: right;
 }
+.time { margin-right: calc(var(--tv) * .3); } /* room for am/pm, which hangs outside the right edge */
 .time[hidden] { display: none; }
 .time__k, .time__diff { margin: 0; }
 .time__k { font-family: var(--sans); font-size: var(--tk); line-height: 1.45; }
@@ -524,7 +525,7 @@ html.is-scrubbing .rule--v::after { left: -9px; width: 19px; }
   .rule--v { right: calc(var(--gutter) + var(--pip) / 2 - var(--hair) / 2); top: max(var(--top), var(--bar-clear)); bottom: var(--gutter); height: auto; }
   .dots { width: var(--dots); top: calc(var(--top) + var(--tg) * .62); right: calc(var(--rail) - var(--dots) * .019); }
   .time { right: var(--rail); bottom: var(--gutter); }
-  .blurb { max-width: min(58ch, calc(100vw - var(--gutter) - var(--rail) - 14rem)); } /* short of the clock */
+  .blurb { max-width: min(58ch, calc(100vw - var(--gutter) - var(--rail) - 15.5rem)); } /* short of the clock */
   .vert { display: none; }
 }
 
