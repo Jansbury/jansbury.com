@@ -122,16 +122,29 @@ function createMatrix(el) {
 const drawTime = timeEl ? createMatrix(timeEl) : null;
 
 // The temperature in Auckland now, from Open-Meteo (free, no key, sends nothing about the visitor:
-// the request carries only Auckland's coordinates). Checked on the minute tick: every half hour
-// once it has one, sooner after a failure (a request that hangs is cut off after 8s, then tried
-// again in a minute, five, then every quarter hour). Until one succeeds, the label has no temperature.
+// the request carries only Auckland's coordinates). The reading, and when the next request is due,
+// are kept in the browser, so reloads, return visits and other tabs show it at once and never ask
+// early: a good reading lasts an hour; after a failure (a request that hangs is cut off after 8s)
+// the next try waits a minute, then five, then a quarter hour. Until one succeeds, the label has no
+// temperature.
 const WEATHER = "https://api.open-meteo.com/v1/forecast?latitude=-36.85&longitude=174.76&current=temperature_2m";
-const WEATHER_EVERY = 30 * 60_000;
+const WEATHER_EVERY = 60 * 60_000;
 const WEATHER_RETRY = [60_000, 5 * 60_000, 15 * 60_000];
 const WEATHER_TIMEOUT = 8000;
-let temperature = null; // °C, unrounded
-let nextCheck = 0;
-let failures = 0;
+const WEATHER_STALE = 3 * 60 * 60_000; // an older reading isn't shown
+const WEATHER_KEY = "auckland-weather"; // localStorage: { t: °C or null, at, next: ms, failures }
+let weather = { t: null, at: 0, next: 0, failures: 0 };
+try {
+  const kept = JSON.parse(localStorage.getItem(WEATHER_KEY));
+  // Ignore anything stored by a clock that has since been set back
+  if (kept && kept.next - Date.now() <= WEATHER_EVERY) weather = kept;
+} catch { /* storage blocked or empty: ask */ }
+let temperature = Date.now() - weather.at < WEATHER_STALE ? weather.t : null; // °C, unrounded
+
+function keep(next, at = weather.at) {
+  weather = { t: temperature, at, next, failures: weather.failures };
+  try { localStorage.setItem(WEATHER_KEY, JSON.stringify(weather)); } catch { /* not kept */ }
+}
 
 // Auckland's is in °C, as it is there. Visitors who think in Fahrenheit (the US and a few others)
 // also get it converted, under the clock. The region comes from the browser's language when it names one
@@ -143,21 +156,23 @@ const region = (navigator.languages ?? [navigator.language])
   .find(Boolean);
 const fahrenheit = region ? FAHRENHEIT.has(region) : US_ZONE.test(zone);
 async function checkWeather() {
-  if (Date.now() < nextCheck) return;
-  nextCheck = Infinity; // one request at a time
+  if (Date.now() < weather.next) return;
+  keep(Date.now() + WEATHER_TIMEOUT + 2000); // claim this request, so other tabs and reloads wait for it
   try {
     const res = await fetch(WEATHER, {
-      referrerPolicy: "no-referrer", credentials: "omit", signal: AbortSignal.timeout?.(WEATHER_TIMEOUT), // older browsers just wait
+      referrerPolicy: "no-referrer", credentials: "omit",
+      signal: AbortSignal.timeout?.(WEATHER_TIMEOUT), // older browsers just wait
     });
     const t = res.ok ? (await res.json())?.current?.temperature_2m : undefined;
     if (typeof t !== "number") throw new Error(`no temperature (${res.status})`);
     temperature = t;
-    failures = 0;
-    nextCheck = Date.now() + WEATHER_EVERY;
+    weather.failures = 0;
+    keep(Date.now() + WEATHER_EVERY, Date.now());
     render();
   } catch {
-    // Offline, slow or blocked: keep any earlier reading and try again soon
-    nextCheck = Date.now() + WEATHER_RETRY[Math.min(failures++, WEATHER_RETRY.length - 1)];
+    // Offline, slow or blocked: keep any earlier reading and try again after a wait
+    const wait = WEATHER_RETRY[Math.min(weather.failures++, WEATHER_RETRY.length - 1)];
+    keep(Date.now() + wait);
   }
 }
 
