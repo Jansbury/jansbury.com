@@ -271,17 +271,19 @@ button { -webkit-tap-highlight-color: transparent; }
   .pips:hover b:nth-child(2) { background: var(--n2); rotate: 45deg; }
   .pips:hover b:nth-child(3) { background: var(--n3); }
 }
-/* hints.js: now and then they wave, one after another: each leans out a little, softens into a
-   rounded square as it shows the next colour, and bounces back */
-@keyframes pip-wave {
+/* hints.js: now and then they bump each other: the top square drops into the next, which knocks
+   the bottom one, and all three bounce back, squashing as they land and softening at the corners
+   while they show the next colours. Each knock is a little stronger (--a). */
+@keyframes pip-bump {
   0%   { translate: 0 0; scale: 1; border-radius: 0; }
-  35%  { translate: -5px 0; scale: 1.18; border-radius: 32%; }
-  65%  { translate: 1px 0; scale: .96; border-radius: 22%; }
+  22%  { translate: 0 calc(var(--a) * 4px); scale: 1.14 .8; border-radius: 28%; }
+  50%  { translate: 0 calc(var(--a) * -4px); scale: .92 1.1; border-radius: 20%; }
+  74%  { translate: 0 calc(var(--a) * 1px); scale: 1.03 .97; }
   100% { translate: 0 0; scale: 1; border-radius: 0; }
 }
-.pips.is-hinting b { animation: pip-wave 720ms cubic-bezier(.3, 1.4, .5, 1) both; }
-.pips.is-hinting b:nth-child(2) { rotate: 0deg; animation-delay: 110ms; }
-.pips.is-hinting b:nth-child(3) { animation-delay: 220ms; }
+.pips.is-hinting b { --a: 1; animation: pip-bump 760ms cubic-bezier(.3, 1.3, .5, 1) both; }
+.pips.is-hinting b:nth-child(2) { --a: 1.2; rotate: 0deg; animation-delay: 90ms; }
+.pips.is-hinting b:nth-child(3) { --a: 1.5; animation-delay: 180ms; }
 @media (prefers-reduced-motion: reduce) { .pips.is-hinting b { animation: none; } }
 
 /* The brand's target mark, in the site palette */
