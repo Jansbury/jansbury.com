@@ -20,6 +20,7 @@
   --orange: #da5328;
   --amber: #e2ae4a;
   --red: #ef6a7a;
+  --signal: #e8372c; /* the seconds hand: a railway red, apart from the palette */
   --green: #52c08f;
   --sky: #72b4f0;
 
@@ -267,20 +268,42 @@ button { -webkit-tap-highlight-color: transparent; }
   background: radial-gradient(circle at calc(50% + var(--ox) * 1.5) calc(50% + var(--oy) * 1.5),
     var(--core) 0 calc(var(--tg) * .311), var(--ring) 0);
 }
-/* The target is also Auckland's clock face (clock.js sets --hr and --mn) */
+/* The target is also a clock face (clock.js sets --hr, --mn and --sec). The hour and minute hands
+   are black batons with an inlay in the page's colour; the seconds hand is a red rod with a disc
+   near its tip, after the railway clock, sweeping round once a minute. Sizes are in parts of the
+   target, so the hands grow with it. */
 .target::after {
   content: ""; position: absolute; left: 50%; top: 50%;
-  width: 5%; aspect-ratio: 1; border-radius: 50%;
-  translate: -50% -50%; background: var(--ink);
+  width: 3.4%; aspect-ratio: 1; border-radius: 50%;
+  translate: -50% -50%; background: var(--signal);
 }
 .hand {
-  position: absolute; left: 50%; bottom: 50%;
-  width: max(2px, .22vw); margin-left: calc(max(2px, .22vw) / -2);
-  background: var(--ink);
-  transform-origin: 50% 100%;
+  position: absolute; left: 50%; bottom: calc(50% - var(--tail));
+  width: var(--w); margin-left: calc(var(--w) / -2);
+  height: calc(var(--len) + var(--tail));
+  background: var(--black);
+  transform-origin: 50% calc(100% - var(--tail));
 }
-.hand--h { height: 24%; rotate: var(--hr, 0deg); }
-.hand--m { height: 37%; rotate: var(--mn, 0deg); }
+.hand--h, .hand--m { --tail: 6%; }
+.hand--h { --w: 5.6%; --len: 24%; rotate: var(--hr, 0deg); }
+.hand--m { --w: 4.2%; --len: 38%; rotate: var(--mn, 0deg); }
+/* The inlay: the page's colour down the middle, short of both ends */
+.hand--h::before, .hand--m::before {
+  content: ""; position: absolute; inset: 22% 30% 26%;
+  background: var(--field);
+}
+.hand--s {
+  --tail: 12%; --w: 1.2%; --len: 36%;
+  background: var(--signal);
+  animation: sweep 60s linear infinite var(--sec, 0s);
+}
+.hand--s::after {
+  content: ""; position: absolute; left: 50%; top: 0;
+  width: 650%; aspect-ratio: 1; border-radius: 50%;
+  translate: -50% 0; background: var(--signal);
+}
+@keyframes sweep { from { rotate: 0deg; } to { rotate: 360deg; } }
+@media (prefers-reduced-motion: reduce) { .hand--s { animation-timing-function: steps(60); } }
 
 /* The visitor's city hangs under the target, whose hands show their time */
 .vert {

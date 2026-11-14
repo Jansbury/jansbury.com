@@ -199,6 +199,13 @@ async function checkWeather() {
   }
 }
 
+// The seconds hand sweeps by itself (site.css); this starts it at the right point, once. Changing
+// it later would make a running sweep jump.
+{
+  const t = new Date();
+  root.style.setProperty("--sec", `${-(t.getSeconds() + t.getMilliseconds() / 1000)}s`);
+}
+
 // Scrubbing shifts every clock by `shift` ms; letting go eases it back to 0.
 let shift = 0;
 let scrubbing = false;
