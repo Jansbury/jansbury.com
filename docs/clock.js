@@ -13,7 +13,7 @@ const NIGHT_UNTIL = 7;  // ...until 07:00
 const DAY = 1440;       // minutes
 const DRAG_STEP = 5;    // minutes per step when dragging
 const KEY_STEP = 15;    // minutes per arrow key
-const LAST = DAY - DRAG_STEP; // the bar stops at 23:55, so the bottom never wraps to 00:00
+const LAST = DAY - DRAG_STEP; // the bar stops at 23:55, so the bottom never wraps round to midnight
 const EASE_BACK = 600;  // ms to return to now after letting go
 const PLATE_BASE = 4;   // plate units off register for a visitor in Auckland's own time
 const PLATE_PER_HOUR = 0.5;
@@ -75,7 +75,7 @@ function inWords({ offset, days }) {
   return `${amount} behind${days < 0 ? ", still yesterday" : ""}`;
 }
 
-// Auckland time is drawn as a 5x7 dot matrix in the same round dots as the "Hi" grid.
+// Auckland time is drawn as a 5x7 dot matrix, in the same round dots as the dot grid.
 // The dots stay in place and switch on and off, so digits morph into each other.
 const bits = (rows) => [...rows.replace(/ /g, "")].map((bit) => bit === "1");
 const GLYPHS = [
