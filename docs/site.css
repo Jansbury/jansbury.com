@@ -470,6 +470,9 @@ html.is-scrubbing .rule--v::after { left: -9px; width: 19px; }
   .dots { top: var(--gutter); right: calc(var(--tr) + var(--tg) + clamp(1.5rem, 4vw, 4rem)); width: clamp(3rem, 5vw, 5rem); }
   .pips { right: calc(var(--gutter) + .9rem); }
   .rule--v { right: calc(var(--gutter) / 2); top: var(--gutter); bottom: var(--gutter); height: auto; }
+  /* The headline sits close under the logo here, so the contact letters get their room kept */
+  .sign { margin-bottom: calc((var(--drop) + 7) * var(--p)); }
+
 }
 /* Phones on their side have no room in the middle: the target goes top right, above the clock,
    as big as the height between them allows */
@@ -480,9 +483,10 @@ html.is-scrubbing .rule--v::after { left: -9px; width: 19px; }
 
 /* The smallest phones on their side: everything in the copy comes down a step to fit the height */
 @media (max-height: 360px) and (orientation: landscape) {
-  .line { font-size: min(6.4vw, 15svh); }
-  .copy { row-gap: 1.1rem; }
-  .blurb { font-size: .92rem; }
+  .line { font-size: min(6.4vw, 13svh); }
+  .copy { row-gap: .9rem; }
+  .sign { --p: 2.5px; } /* smaller contact letters, so they fit above the headline */
+  .blurb { font-size: .92rem; max-width: calc(100vw - 2 * var(--gutter) - 13rem); } /* wider, so it takes fewer lines */
 }
 
 /* Tall and near-square windows with height to spare: the same arrangement, with the headline

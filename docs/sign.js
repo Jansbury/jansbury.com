@@ -19,7 +19,7 @@ const GLYPHS = {
 };
 const WORD_GAP = 7;   // empty columns between names
 const LINE_COLS = 32; // length of the resting line, in cells
-const DROP = 3;       // rows from the line down to the top of the letters
+const DROP = 1;       // rows from the line down to the top of the letters
 
 const sign = document.querySelector("[data-sign]");
 const toggle = sign?.querySelector(".sign__line");

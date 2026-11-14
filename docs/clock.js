@@ -296,6 +296,7 @@ function render() {
       ? `${say(now.getHours(), now.getMinutes())} where you are`
       : inWords(apart) + (temperature === null || !fahrenheit
         ? "" : `\n${Math.round(temperature)}°C is ${Math.round(temperature * 9 / 5 + 32)}°F to you`);
+    if (countsUp && !shift) diffEl.textContent = ""; // the label above says it all
     // Lines past the first, so the narrow layout can make room for them (site.css)
     root.style.setProperty("--diff-extra", diffEl.textContent.split("\n").length - 1);
     box.hidden = false;
