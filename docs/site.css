@@ -162,7 +162,7 @@ button { -webkit-tap-highlight-color: transparent; }
 .copy .line { align-self: auto; justify-self: start; }
 .blurb {
   margin: 0; max-width: min(58ch, 46vw); /* three lines on a wide screen, and short of the city name and the clock */
-  font-family: var(--sans); font-size: clamp(1.05rem, .9rem + .55vw, 1.6rem); line-height: 1.4;
+  font-family: var(--sans); font-size: clamp(1.05rem, .9rem + .55vw, 1.6rem); line-height: 1.52;
   text-wrap: pretty;
   transition: color var(--t) var(--ease);
 }
