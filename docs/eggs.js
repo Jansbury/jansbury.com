@@ -15,7 +15,7 @@ if (dots) {
     draw(".#.#. .#.#. ..... #...# .###."), // a smile
     draw(".#.#. ##### ##### .###. ..#.."), // a heart
     draw("..##. ..#.# ..#.. ###.. ###.."), // a note, for the music
-    draw("..### ...#. ...#. #..#. .##.."), // J
+    draw(".#... .#.## ..... #...# .###."), // a wink
   ];
   let next = 0;
   const show = () => { spell(PICTURES[next]); next = (next + 1) % PICTURES.length; };
