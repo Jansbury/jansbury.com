@@ -1,6 +1,6 @@
-// The dot grid says "Hi". Hover it (or tap on touch screens) and every dot travels: the fifteen
-// the letters need move into place and the other ten land on top of those and merge in.
-// The routes are shuffled each time.
+// The dot grid draws something. Hover it (or tap on touch screens) and every dot travels: the ones
+// the picture needs move into place and the rest land on top of those and merge in. The first
+// time it says "Hi"; each time after, the next picture. The routes are shuffled each time.
 const dots = document.querySelector(".dots");
 
 if (dots) {
@@ -8,6 +8,17 @@ if (dots) {
   all.forEach((b, i) => b.style.setProperty("--i", i));
   // "Hi" is marked in the markup: the dots it doesn't need have class "o"
   const HI = all.flatMap((b, i) => (b.classList.contains("o") ? [] : [i]));
+  // The rest, drawn 5 by 5
+  const draw = (rows) => [...rows.replace(/ /g, "")].flatMap((c, i) => (c === "#" ? [i] : []));
+  const PICTURES = [
+    HI,
+    draw(".#.#. .#.#. ..... #...# .###."), // a smile
+    draw(".#.#. ##### ##### .###. ..#.."), // a heart
+    draw("..##. ..#.# ..#.. ###.. ###.."), // a note, for the music
+    draw("..### ...#. ...#. #..#. .##.."), // J
+  ];
+  let next = 0;
+  const show = () => { spell(PICTURES[next]); next = (next + 1) % PICTURES.length; };
 
   const shuffle = (list) => {
     for (let i = list.length - 1; i > 0; i--) {
@@ -31,9 +42,9 @@ if (dots) {
     dots.classList.remove("is-spelling");
   }
 
-  dots.addEventListener("pointerenter", (e) => { if (e.pointerType === "mouse") spell(HI); });
+  dots.addEventListener("pointerenter", (e) => { if (e.pointerType === "mouse") show(); });
   dots.addEventListener("pointerleave", (e) => { if (e.pointerType === "mouse") settle(); });
   dots.addEventListener("pointerup", (e) => {
-    if (e.pointerType !== "mouse") dots.classList.contains("is-spelling") ? settle() : spell(HI);
+    if (e.pointerType !== "mouse") dots.classList.contains("is-spelling") ? settle() : show();
   });
 }
