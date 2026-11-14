@@ -278,29 +278,31 @@ button { -webkit-tap-highlight-color: transparent; }
   translate: -50% -50%; background: var(--signal);
 }
 .hand {
-  position: absolute; left: 50%; bottom: calc(50% - var(--tail));
-  width: var(--w); margin-left: calc(var(--w) / -2);
-  height: calc(var(--len) + var(--tail));
+  /* All in parts of the target's width (--tg), so the pivot is exactly its centre */
+  --tl: calc(var(--tg) * var(--tail)); --wd: calc(var(--tg) * var(--w));
+  position: absolute; left: 50%; bottom: calc(50% - var(--tl));
+  width: var(--wd); margin-left: calc(var(--wd) / -2);
+  height: calc(var(--tg) * var(--len) + var(--tl));
   background: var(--black);
-  transform-origin: 50% calc(100% - var(--tail));
+  transform-origin: 50% calc(100% - var(--tl));
 }
-.hand--h, .hand--m { --tail: 6%; }
-.hand--h { --w: 5.6%; --len: 24%; rotate: var(--hr, 0deg); }
-.hand--m { --w: 4.2%; --len: 38%; rotate: var(--mn, 0deg); }
+.hand--h, .hand--m { --tail: .06; }
+.hand--h { --w: .042; --len: .25; rotate: var(--hr, 0deg); }
+.hand--m { --w: .032; --len: .39; rotate: var(--mn, 0deg); }
 /* The inlay: the page's colour down the middle, short of both ends */
 .hand--h::before, .hand--m::before {
-  content: ""; position: absolute; inset: 22% 30% 26%;
+  content: ""; position: absolute; inset: 24% 30% 22%;
   background: var(--field);
 }
 .hand--s {
-  --tail: 12%; --w: 1.2%; --len: 36%;
+  --tail: .12; --w: .011; --len: .37;
   background: var(--signal);
   animation: sweep 60s linear infinite var(--sec, 0s);
 }
 .hand--s::after {
   content: ""; position: absolute; left: 50%; top: 0;
-  width: 650%; aspect-ratio: 1; border-radius: 50%;
-  translate: -50% 0; background: var(--signal);
+  width: calc(var(--tg) * .07); aspect-ratio: 1; border-radius: 50%;
+  translate: -50% -30%; background: var(--signal);
 }
 @keyframes sweep { from { rotate: 0deg; } to { rotate: 360deg; } }
 @media (prefers-reduced-motion: reduce) { .hand--s { animation-timing-function: steps(60); } }
