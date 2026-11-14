@@ -56,9 +56,9 @@
   --core: var(--amber);
 }
 html[data-theme="orange"] { --field: var(--orange); --ink-full: var(--bone);  --ring: var(--sky);   --core: var(--amber); }
-html[data-theme="amber"]  { --field: var(--amber);  --ink-full: var(--black); --ring: var(--sky);   --core: var(--orange); }
+html[data-theme="amber"]  { --field: var(--amber);  --ink-full: var(--black); --ring: var(--sky);   --core: var(--green); } /* not orange: the red seconds hand would vanish into it */
 html[data-theme="red"]    { --field: var(--red);    --ink-full: var(--black); --ring: var(--amber); --core: var(--sky); }
-html[data-theme="green"]  { --field: var(--green);  --ink-full: var(--black); --ring: var(--red);   --core: var(--amber); }
+html[data-theme="green"]  { --field: var(--green);  --ink-full: var(--black); --ring: var(--sky);   --core: var(--amber); } /* not a red ring: the seconds disc crosses it */
 html[data-theme="sky"]    { --field: var(--sky);    --ink-full: var(--black); --ring: var(--amber); --core: var(--green); }
 
 /* Night in Auckland (clock.js sets data-night): the ink sinks a little into the field and the grain thickens */
