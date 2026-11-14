@@ -329,14 +329,14 @@ html.is-scrubbing .hand--m, html.is-scrubbing .hand--h { transition: none; } /* 
 .dots {
   width: clamp(3.6rem, 5.4vw, 6.6rem); aspect-ratio: 1;
   right: 11%; top: calc(var(--tt) + var(--tg) * .62); /* tied to the target, clear of the clock */
-  display: grid; grid-template-columns: repeat(7, 1fr);
+  display: grid; grid-template-columns: repeat(11, 1fr);
   pointer-events: auto; cursor: default;
 }
 /* eggs.js: a 7x7 display. Dots never move. Drawing, the lit ones swell and the rest fade back to a
    faint grid, in a wave out from the middle (--d), so one picture morphs into the next */
 .dots b {
   display: block; border-radius: 50%; background: var(--ink); scale: .44;
-  transition: scale 420ms var(--ease) calc(var(--d, 0) * 40ms), opacity 420ms var(--ease) calc(var(--d, 0) * 40ms);
+  transition: scale 420ms var(--ease) calc(var(--d, 0) * 24ms), opacity 420ms var(--ease) calc(var(--d, 0) * 24ms);
 }
 .dots.is-spelling b { scale: .36; opacity: .22; }
 .dots.is-spelling b.on { scale: .86; opacity: 1; }
@@ -432,8 +432,8 @@ html.is-scrubbing .rule--v::after { left: -9px; width: 19px; }
   .hours b { left: 6px; font-size: .62rem; }
   .hours b::before { display: none; }
   /* The dots sit on the target's centre line, where its hands turn */
-  /* (.04 of the grid: the outer dots sit that far inside its box, so this puts them on the margin) */
-  .dots { right: auto; left: calc(var(--gutter) - 4.6rem * .04); width: 4.6rem; top: calc(var(--top) + var(--tg) / 2 - 2.3rem); }
+  /* (.025 of the grid: the outer dots sit that far inside its box, so this puts them on the margin) */
+  .dots { right: auto; left: calc(var(--gutter) - 4.6rem * .025); width: 4.6rem; top: calc(var(--top) + var(--tg) / 2 - 2.3rem); }
 }
 /* Taller still, the headline stacks into four lines. The height that needs grows with the width
    (about 91vw + 25.5rem), which a media query can't say, so the break steps up in bands.
@@ -508,7 +508,7 @@ html.is-scrubbing .rule--v::after { left: -9px; width: 19px; }
      sentence's, and the day bar runs from the top of the target down to it. */
   .pips { right: calc(var(--gutter) + var(--pip) / 2 - 22px); width: 44px; padding-inline: 0; }
   .rule--v { right: calc(var(--gutter) + var(--pip) / 2 - var(--hair) / 2); top: max(var(--top), var(--bar-clear)); bottom: var(--gutter); height: auto; }
-  .dots { width: var(--dots); top: calc(var(--top) + var(--tg) * .62); right: calc(var(--rail) - var(--dots) * .04); }
+  .dots { width: var(--dots); top: calc(var(--top) + var(--tg) * .62); right: calc(var(--rail) - var(--dots) * .025); }
   .time { right: var(--rail); bottom: var(--gutter); }
   .blurb { max-width: min(58ch, calc(100vw - var(--gutter) - var(--rail) - 14rem)); } /* short of the clock */
   .vert { display: none; }
@@ -520,8 +520,13 @@ html.is-scrubbing .rule--v::after { left: -9px; width: 19px; }
    target on its open side, level with the top of the page */
 @media (min-width: 1000px) and (max-height: 760px) and (min-height: 501px) and (orientation: landscape) {
   .dots { top: var(--gutter); right: calc(var(--tr) + var(--tg) + clamp(1.5rem, 4vw, 4rem)); }
+  /* The headline sits close under the logo too: contact comes up and down a size */
+  .brand { row-gap: .45rem; }
+  .sign { --p: 2.5px; margin-bottom: calc((var(--drop) + 7) * var(--p)); }
+  .line { font-size: clamp(2.4rem, min(8.6vw, 13svh), 13rem); } /* a size down, to fit the height */
+  .copy { row-gap: min(clamp(2rem, 3.4vw, 3.25rem), 7svh); }
 }
 
 @media (min-width: 1800px) { html { font-size: 125%; } }
 /* ...but not when the window is short: there isn't the height for larger type */
-@media (min-width: 1800px) and (max-height: 500px) { html { font-size: 100%; } }
+@media (min-width: 1800px) and (max-height: 760px) { html { font-size: 100%; } }

@@ -1,30 +1,129 @@
-// The dot grid is a small display, 7 by 7. At rest every dot is the same size. Hover it (or tap on
+// The dot grid is a small display, 11 by 11. At rest every dot is the same size. Hover it (or tap on
 // touch screens) and it draws a picture: the dots stay where they are, the ones the picture needs
 // swell and the rest fade to a faint grid, in a wave out from the middle, so one picture morphs into
 // the next. The first time it says "Hi"; each time after, the next picture.
 const dots = document.querySelector(".dots");
-const SIZE = 7;
+const SIZE = 11;
 
 if (dots) {
   const all = Array.from({ length: SIZE * SIZE }, (_, i) => {
     const b = document.createElement("b");
     // How far from the middle, for the wave
-    b.style.setProperty("--d", Math.hypot((i % SIZE) - 3, Math.floor(i / SIZE) - 3).toFixed(2));
+    b.style.setProperty("--d", Math.hypot((i % SIZE) - (SIZE - 1) / 2, Math.floor(i / SIZE) - (SIZE - 1) / 2).toFixed(2));
     return b;
   });
   dots.replaceChildren(...all);
 
-  const draw = (rows) => [...rows.replace(/ /g, "")].map((c) => c === "#");
+  const draw = (rows) => [...rows.replace(/\s/g, "")].map((c) => c === "#");
   const PICTURES = [
-    draw("#...#.# #...#.. #...#.# #####.# #...#.# #...#.# #...#.#"), // Hi
-    draw("....... .#...#. .#...#. ....... #.....# .#...#. ..###.."), // a smile
-    draw("....... .##.##. ####### ####### .#####. ..###.. ...#..."), // a heart
-    draw("...#... .#.#... .#.#.#. ####### .#.#.#. .#.#... ...#..."), // a sound wave, for the music
-    draw("....... .#..... .#..### ....... #.....# .#...#. ..###.."), // a wink
-    draw("...#... ..###.. .#####. ####### .#####. ..###.. ...#..."), // a diamond
-    draw("#.....# ##...## ####### #.###.# ####### #.#.#.# .#...#."), // Gengar: spiky ears, a toothy grin
-    draw(".#.#.#. ..###.. .#####. #.#.#.# ####### #.###.# .#####."), // Togepi: crown spikes on an egg
-    draw("..###.. .#####. #.#.#.# ##...## ###.### .#####. .#...#."), // Piplup: crest, eyes, beak, feet
+    draw(`
+      ...........
+      ...........
+      .#...#..#..
+      .#...#.....
+      .#...#..#..
+      .#####..#..
+      .#...#..#..
+      .#...#..#..
+      .#...#..#..
+      ...........
+      ...........`), // Hi
+    draw(`
+      ...........
+      ...........
+      ...#...#...
+      ...#...#...
+      ...#...#...
+      ...........
+      .#.......#.
+      ..#.....#..
+      ...#####...
+      ...........
+      ...........`), // a smile
+    draw(`
+      ...........
+      ..##...##..
+      .####.####.
+      ###########
+      ###########
+      ###########
+      .#########.
+      ..#######..
+      ...#####...
+      ....###....
+      .....#.....`), // a heart
+    draw(`
+      .....#.....
+      .....#...#.
+      ...#.#...#.
+      ...#.#.#.#.
+      .#.#.#.#.#.
+      .#.#.#.#.#.
+      .#.#.#.#.#.
+      ...#.#.#.#.
+      ...#.#...#.
+      .....#...#.
+      .....#.....`), // a sound wave, for the music
+    draw(`
+      ...........
+      ...........
+      ...#.......
+      ...#...###.
+      ...#.......
+      ...........
+      .#.......#.
+      ..#.....#..
+      ...#####...
+      ...........
+      ...........`), // a wink
+    draw(`
+      .....#.....
+      ....###....
+      ...#####...
+      ..#######..
+      .#########.
+      ###########
+      .#########.
+      ..#######..
+      ...#####...
+      ....###....
+      .....#.....`), // a diamond
+    draw(`
+      ...........
+      #.........#
+      ##.......##
+      .###...###.
+      ..##...##..
+      ...........
+      #.........#
+      ##.##.##.##
+      .#########.
+      ..#######..
+      ...........`), // Gengar's face: narrowed eyes over that huge toothy grin
+    draw(`
+      ...#.#.#...
+      ..#######..
+      .##.###.##.
+      .#########.
+      #.#######.#
+      #.#######.#
+      .#.#.#.#.#.
+      .##.###.##.
+      .#########.
+      ..#######..
+      ..##...##..`), // Togepi: spiky head, eyes, arms out, the zigzag of its shell, feet
+    draw(`
+      ...#####...
+      ..#######..
+      .####.####.
+      .#.......#.
+      #..##.##..#
+      #..##.##..#
+      #....#....#
+      .#..###..#.
+      ..#######..
+      .#########.
+      ..##...##..`), // Piplup: cap, big eyes, beak, round body, feet
   ];
   let next = 0;
 
