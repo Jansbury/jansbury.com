@@ -470,8 +470,10 @@ html.is-scrubbing .rule--v::after { left: -9px; width: 19px; }
   .dots { top: var(--gutter); right: calc(var(--tr) + var(--tg) + clamp(1.5rem, 4vw, 4rem)); width: clamp(3rem, 5vw, 5rem); }
   .pips { right: calc(var(--gutter) + .9rem); }
   .rule--v { right: calc(var(--gutter) / 2); top: var(--gutter); bottom: var(--gutter); height: auto; }
-  /* The headline sits close under the logo here, so the contact letters get their room kept */
-  .sign { margin-bottom: calc((var(--drop) + 7) * var(--p)); }
+  /* The headline sits close under the logo here: the contact line comes up and down a size, and
+     its letters get their room kept */
+  .brand { row-gap: .45rem; }
+  .sign { --p: 2.5px; margin-bottom: calc((var(--drop) + 7) * var(--p)); }
 
 }
 /* Phones on their side have no room in the middle: the target goes top right, above the clock,
@@ -485,7 +487,6 @@ html.is-scrubbing .rule--v::after { left: -9px; width: 19px; }
 @media (max-height: 360px) and (orientation: landscape) {
   .line { font-size: min(6.4vw, 13svh); }
   .copy { row-gap: .9rem; }
-  .sign { --p: 2.5px; } /* smaller contact letters, so they fit above the headline */
   .blurb { font-size: .92rem; max-width: calc(100vw - 2 * var(--gutter) - 13rem); } /* wider, so it takes fewer lines */
 }
 

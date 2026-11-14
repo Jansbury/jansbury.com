@@ -152,15 +152,41 @@ const drawTime = (h, m) =>
   draw(String(twelve(h)).padStart(2, " ") + pad(m), h < 12 ? "A" : "P", "M", say(h, m));
 
 // Someone in New Zealand already knows the time here, so for them the clock counts the time since
-// the site last changed instead: hours and minutes (H M beside the digits), and past 99 hours, days
-// and hours (D H). The page's Last-Modified header is when it was deployed. Browsers that don't
-// get one report the time the page loaded; then there's nothing to count and the clock stays a clock.
+// Jans last pushed code: hours and minutes (H M beside the digits), and past 99 hours, days and
+// hours (D H). Two sources, and the later one wins:
+// - this page's Last-Modified header, which is when the site last deployed (browsers that don't get
+//   one report the time the page loaded, which doesn't count);
+// - the latest push in Jans's public GitHub activity, which also covers other public repos. The
+//   feed can run hours behind, which is why the deploy time is kept too.
+// The GitHub answer is kept in the browser for an hour, so reloads don't spend GitHub's 60 requests
+// an hour; a failure waits a quarter hour before trying again.
 const loaded = Date.now();
-const deployed = Date.parse(document.lastModified);
-const countsUp = IN_NZ && Number.isFinite(deployed) && Math.abs(loaded - deployed) > 5000;
+const lastModified = Date.parse(document.lastModified);
+const deployed = Number.isFinite(lastModified) && Math.abs(loaded - lastModified) > 5000 ? lastModified : 0;
+const PUSHES = "https://api.github.com/users/Jansbury/events/public?per_page=30";
+const PUSH_KEY = "github-push"; // localStorage: { at: ms of the latest push or 0, next: ms }
+let pushed = 0;
+try { pushed = JSON.parse(localStorage.getItem(PUSH_KEY))?.at || 0; } catch { /* nothing kept */ }
+const committed = () => Math.max(deployed, pushed);
+const countsUp = IN_NZ && committed() > 0;
+async function checkPushes() {
+  let kept = null;
+  try { kept = JSON.parse(localStorage.getItem(PUSH_KEY)); } catch { /* nothing kept */ }
+  if (kept && Date.now() < kept.next) return;
+  let next = Date.now() + 15 * 60_000;
+  try {
+    const res = await fetch(PUSHES, { signal: AbortSignal.timeout?.(8000), headers: { Accept: "application/vnd.github+json" } });
+    if (!res.ok) throw new Error(res.status);
+    const push = (await res.json()).find((e) => e.type === "PushEvent");
+    if (push) pushed = Date.parse(push.created_at) || pushed;
+    next = Date.now() + 60 * 60_000;
+    render();
+  } catch { /* offline, blocked or over the limit: keep what we had */ }
+  try { localStorage.setItem(PUSH_KEY, JSON.stringify({ at: pushed, next })); } catch { /* not kept */ }
+}
 const plural = (n, word) => `${n} ${word}${n === 1 ? "" : "s"}`;
 function drawSince(now) {
-  const mins = Math.max(0, Math.floor((now - deployed) / 60_000));
+  const mins = Math.max(0, Math.floor((now - committed()) / 60_000));
   const h = Math.floor(mins / 60);
   if (h < 100) {
     draw(String(h).padStart(2, " ") + pad(mins % 60), "H", "M",
@@ -311,6 +337,7 @@ function everyMinute() {
   if (document.hidden) return;
   render();
   checkWeather();
+  if (countsUp) checkPushes();
   minuteTimer = setTimeout(everyMinute, 60_000 - (Date.now() % 60_000) + 50);
 }
 everyMinute();
