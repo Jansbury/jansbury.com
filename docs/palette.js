@@ -100,33 +100,41 @@ function setLine(n, wipe = false) {
   swap = setTimeout(() => {
     write();
     for (const el of [does, what]) {
-      el.classList.remove("is-leaving");
-      void el.offsetWidth; // restart the animation
-      el.classList.add("is-reprint");
+      el.classList.replace("is-leaving", "is-reprint");
     }
   }, WIPE_OUT);
 }
 
-// Left alone, the headline moves on to the next line every few seconds. It waits while the pointer
-// is on the headline or the tab is hidden, and it stays put for visitors who prefer reduced motion.
+// Left alone, the headline moves on every few seconds until it has shown each line once, then it
+// stays put. Nothing is scheduled while the pointer is on the headline or the tab is hidden, and
+// it never moves for visitors who prefer reduced motion.
 const CYCLE = 6000;
 const calm = matchMedia("(prefers-reduced-motion: reduce)");
 let cycle = 0;
+let left = 0;
 let held = false;
 
+function schedule() {
+  clearTimeout(cycle);
+  if (left > 0 && !held && !document.hidden && !calm.matches) cycle = setTimeout(advance, CYCLE);
+}
+
+function advance() {
+  left--;
+  setLine((line + 1) % LINES.length, true);
+  schedule();
+}
+
 function startCycle() {
-  clearInterval(cycle);
-  if (calm.matches) return;
-  cycle = setInterval(() => {
-    if (!held && !document.hidden) setLine((line + 1) % LINES.length, true);
-  }, CYCLE);
+  left = LINES.length - 1;
+  schedule();
 }
 
 function reprint() {
   apply(order[(order.indexOf(root.dataset.theme) + 1) % order.length]);
   setLine((line + 1) % LINES.length);
   knock();
-  startCycle(); // a full pause before the next automatic change
+  startCycle(); // a full pause, then another round
 }
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -137,8 +145,10 @@ document.addEventListener("DOMContentLoaded", () => {
   setLine(fresh[Math.floor(Math.random() * fresh.length)]);
 
   const headline = document.querySelector(".line");
-  headline?.addEventListener("pointerenter", () => { held = true; });
-  headline?.addEventListener("pointerleave", () => { held = false; });
+  headline?.addEventListener("pointerenter", () => { held = true; schedule(); });
+  headline?.addEventListener("pointerleave", () => { held = false; schedule(); });
+  document.addEventListener("visibilitychange", schedule);
+  calm.addEventListener("change", schedule);
   startCycle();
 
   const pips = document.querySelector("[data-palette-switch]");

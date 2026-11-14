@@ -59,41 +59,45 @@ html[data-theme="sky"]    { --field: var(--sky);    --ink-full: var(--black); --
 
 /* Night in Auckland (clock.js sets data-night): the ink sinks a little into the field and the grain thickens */
 @property --ink { syntax: "<color>"; inherits: true; initial-value: #f2ece0; }
-html[data-night] { --ink: color-mix(in srgb, var(--ink-full) 80%, var(--field)); }
+@supports (color: color-mix(in srgb, red, blue)) {
+  html[data-night] { --ink: color-mix(in srgb, var(--ink-full) 80%, var(--field)); }
+}
 html[data-night] body::after { opacity: .42; }
 
 *, *::before, *::after { box-sizing: border-box; }
-html { -webkit-text-size-adjust: 100%; overflow-x: clip; }
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; overflow-x: hidden; overflow-x: clip; }
 body {
   margin: 0;
   background: var(--field);
   color: var(--ink);
   font-family: var(--sans);
 }
-/* Print grain, oversized so it can shift without showing an edge */
+/* Print grain */
 body::after {
-  content: ""; position: fixed; inset: -60px; z-index: 10; pointer-events: none;
+  content: ""; position: fixed; inset: 0; z-index: 10; pointer-events: none;
   opacity: .28; mix-blend-mode: soft-light;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.95' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 a { color: inherit; }
+button { -webkit-tap-highlight-color: transparent; }
 ::selection { background: var(--ink); color: var(--field); }
 :focus-visible { outline: 2px solid var(--ink); outline-offset: 6px; }
 
 /* ---------- Home ---------- */
 .home {
   position: relative;
+  min-height: 100vh;
   min-height: 100svh;
   display: grid;
   grid-template-rows: auto 1fr;
   padding: var(--gutter);
+  overflow: hidden;
   overflow: clip;
 }
 
 .brand { position: relative; z-index: 2; display: grid; justify-content: start; row-gap: 1rem; }
 .logo-link { display: block; color: var(--ink); }
 .logo { display: block; width: clamp(9rem, 16vw, 19rem); height: auto; }
-.rule { display: block; background: var(--ink); }
 /* Auckland time, bottom right: large serif digits that cut over each minute */
 .time {
   position: absolute; z-index: 2;
@@ -102,10 +106,10 @@ a { color: inherit; }
   text-align: right;
 }
 .time[hidden] { display: none; }
-.time p { margin: 0; }
+.time__k, .time__diff { margin: 0; }
 .time__k { font-family: var(--sans); font-size: var(--tk); line-height: 1.45; }
 /* Dot-matrix digits (clock.js builds them): 5x7 cells, one em tall */
-.time__v { font-size: var(--tv); line-height: 1; margin-block: .18em .12em !important; }
+.time__v { font-size: var(--tv); line-height: 1; margin-block: .18em .12em; }
 .dm { display: flex; justify-content: flex-end; gap: .16em; height: 1em; }
 .dm i { display: grid; grid-template-columns: repeat(5, 1fr); grid-template-rows: repeat(7, 1fr); width: .714em; }
 .dm i.colon { grid-template-columns: 1fr; width: .143em; }
@@ -139,13 +143,6 @@ a { color: inherit; }
   .line .l.is-reprint { animation-duration: 640ms; animation-delay: 80ms; } /* the longer line takes longer */
 }
 .line .lc { text-transform: none; }
-.line a {
-  text-decoration: underline;
-  text-decoration-thickness: .035em;
-  text-underline-offset: .09em;
-  transition: color var(--t) var(--ease), background-color var(--t) var(--ease);
-}
-.line a:hover, .line a:focus-visible { background: var(--ink); color: var(--field); text-decoration-color: transparent; }
 
 /* Headline plus a sentence of plain copy */
 .copy {
@@ -158,8 +155,8 @@ a { color: inherit; }
   margin: 0; max-width: min(58ch, 46vw); /* three lines on a wide screen, and short of the city name and the clock */
   font-family: var(--sans); font-size: clamp(1.05rem, .9rem + .55vw, 1.6rem); line-height: 1.4;
   text-wrap: pretty;
+  transition: color var(--t) var(--ease);
 }
-.blurb { transition: color var(--t) var(--ease); }
 .blurb a {
   color: var(--ink); /* its own colour, so it holds when the sentence fades */
   transition: color var(--t) var(--ease);
@@ -295,7 +292,7 @@ a { color: inherit; }
 
 /* The vertical rule is a day bar: dashed track, solid fill up to now in Auckland */
 .rule--v {
-  position: absolute; pointer-events: none; /* only the handle inside takes input */
+  position: absolute; display: block; pointer-events: none; /* only the handle inside takes input */
   width: var(--hair); height: 52%; right: calc(var(--gutter) + .4vw); top: var(--tt);
   background: repeating-linear-gradient(to bottom, var(--ink) 0 2px, transparent 2px 7px);
 }
@@ -322,13 +319,11 @@ html.is-scrubbing .hours b { opacity: 1; }
 @media (hover: hover) { .rule--v:has(.scrub:hover) .hours b { opacity: 1; } }
 html.is-scrubbing .rule--v::after { left: -9px; width: 19px; }
 
-
-
 /* ---------- Assembly on load: hard cuts, in reading order ---------- */
 @media (prefers-reduced-motion: no-preference) {
   /* The logo writes itself: a smooth left-to-right reveal, slanted like the pen */
   .logo { animation: write 1100ms cubic-bezier(.5, .1, .35, 1) both 60ms; }
-  body::after { animation: breathe 1.2s steps(3, end) infinite; transition: opacity 600ms var(--ease); }
+  body::after { transition: opacity 600ms var(--ease); }
   html { transition: --ink 600ms var(--ease); }
   .sign { animation: cut-in 1ms both 180ms; }
   .l--1 { animation: wipe 220ms steps(5, end) both 340ms; }
@@ -344,17 +339,10 @@ html.is-scrubbing .rule--v::after { left: -9px; width: 19px; }
   from { clip-path: polygon(0 0, 0 0, -12% 100%, -12% 100%); }
   to   { clip-path: polygon(0 0, 112% 0, 100% 100%, -12% 100%); }
 }
-@keyframes breathe {
-  0%   { translate: 0 0; }
-  33%  { translate: -23px 11px; }
-  66%  { translate: 14px -19px; }
-  100% { translate: 0 0; }
-}
 @keyframes wipe   { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(-10% -2% -10% 0); } }
 /* The smooth pair for headline changes. They reach past the box so the offset print isn't cut. */
 @keyframes wipe-in  { from { clip-path: inset(-10% 104% -10% -4%); } to { clip-path: inset(-10% -4% -10% -4%); } }
 @keyframes wipe-out { from { clip-path: inset(-10% -4% -10% -4%); } to { clip-path: inset(-10% -4% -10% 104%); } }
-@keyframes draw-x { from { scale: 0 1; } }
 @keyframes draw-y { from { scale: 1 0; } }
 
 /* ---------- Narrow and upright: a top-down stack. The target, clock and socials hang from the top
@@ -451,7 +439,3 @@ html.is-scrubbing .rule--v::after { left: -9px; width: 19px; }
 @media (max-height: 760px) { .vert { display: none; } }
 
 @media (min-width: 1800px) { html { font-size: 125%; } }
-
-@media (prefers-reduced-motion: reduce) {
-  .line a { transition: none; }
-}

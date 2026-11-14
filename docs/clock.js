@@ -122,11 +122,12 @@ function createMatrix(el) {
 const drawTime = timeEl ? createMatrix(timeEl) : null;
 
 // The temperature in Auckland now, from Open-Meteo (free, no key, sends nothing about the visitor:
-// the request carries only Auckland's coordinates). Checked every half hour; if it fails, the
-// labels simply have no temperature.
+// the request carries only Auckland's coordinates). Checked again on the minute tick once it is
+// half an hour old; if it fails, the labels simply have no temperature.
 const WEATHER = "https://api.open-meteo.com/v1/forecast?latitude=-36.85&longitude=174.76&current=temperature_2m";
 const WEATHER_EVERY = 30 * 60_000;
 let temperature = null; // °C, unrounded
+let checkedAt = -Infinity;
 
 // Auckland's is in °C, as it is there. Visitors who think in Fahrenheit (the US and a few others)
 // also get it converted, under the clock. The region comes from the browser's language when it names one
@@ -138,6 +139,8 @@ const region = (navigator.languages ?? [navigator.language])
   .find(Boolean);
 const fahrenheit = region ? FAHRENHEIT.has(region) : US_ZONE.test(zone);
 async function checkWeather() {
+  if (Date.now() - checkedAt < WEATHER_EVERY) return;
+  checkedAt = Date.now(); // set before the request, so a slow one isn't sent twice
   try {
     const res = await fetch(WEATHER, { referrerPolicy: "no-referrer", credentials: "omit" });
     if (!res.ok) return;
@@ -147,8 +150,6 @@ async function checkWeather() {
     render();
   } catch { /* offline or blocked: leave the labels as they are */ }
 }
-checkWeather();
-setInterval(() => { if (!document.hidden) checkWeather(); }, WEATHER_EVERY);
 
 // Scrubbing shifts every clock by `shift` ms; letting go eases it back to 0.
 let shift = 0;
@@ -194,15 +195,18 @@ function render() {
   }
 }
 
-// Redraw exactly as each minute turns, and straight away when the tab comes back.
+// Redraw exactly as each minute turns. Nothing ticks while the tab is hidden; it catches up
+// straight away when the tab comes back.
 let minuteTimer = 0;
 function everyMinute() {
-  render();
   clearTimeout(minuteTimer);
+  if (document.hidden) return;
+  render();
+  checkWeather();
   minuteTimer = setTimeout(everyMinute, 60_000 - (Date.now() % 60_000) + 50);
 }
 everyMinute();
-document.addEventListener("visibilitychange", () => { if (!document.hidden) everyMinute(); });
+document.addEventListener("visibilitychange", everyMinute);
 
 // ---------- The day bar as a slider ----------
 function scrubToMinute(target) {
