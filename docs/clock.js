@@ -123,6 +123,25 @@ function createMatrix(el) {
 }
 const drawTime = timeEl ? createMatrix(timeEl) : null;
 
+// The temperature in Auckland now, from Open-Meteo (free, no key, sends nothing about the visitor:
+// the request carries only Auckland's coordinates). Checked every half hour; if it fails, the
+// label simply has no temperature.
+const WEATHER = "https://api.open-meteo.com/v1/forecast?latitude=-36.85&longitude=174.76&current=temperature_2m";
+const WEATHER_EVERY = 30 * 60_000;
+let temperature = null;
+async function checkWeather() {
+  try {
+    const res = await fetch(WEATHER, { referrerPolicy: "no-referrer", credentials: "omit" });
+    if (!res.ok) return;
+    const t = (await res.json())?.current?.temperature_2m;
+    if (typeof t !== "number") return;
+    temperature = Math.round(t);
+    render();
+  } catch { /* offline or blocked: leave the label as it is */ }
+}
+checkWeather();
+setInterval(() => { if (!document.hidden) checkWeather(); }, WEATHER_EVERY);
+
 // Scrubbing shifts every clock by `shift` ms; letting go eases it back to 0.
 let shift = 0;
 let scrubbing = false;
@@ -154,7 +173,9 @@ function render() {
   }
   if (box) {
     drawTime(a.h, a.m);
-    labelEl.textContent = night ? "Asleep in Auckland, NZ" : "Auckland, NZ";
+    // Live time only: a scrubbed hour shouldn't show today's temperature
+    const temp = temperature === null || scrubbing ? "" : `, ${temperature}°C`;
+    labelEl.textContent = (night ? "Asleep in Auckland, NZ" : "Auckland, NZ") + temp;
     diffEl.textContent = scrubbing && apart.offset !== 0
       ? `${pad(now.getHours())}:${pad(now.getMinutes())} where you are`
       : inWords(apart);
