@@ -271,10 +271,18 @@ button { -webkit-tap-highlight-color: transparent; }
   .pips:hover b:nth-child(2) { background: var(--n2); rotate: 45deg; }
   .pips:hover b:nth-child(3) { background: var(--n3); }
 }
-/* hints.js: now and then they spin a quarter turn, one after another */
-.pips.is-hinting b { rotate: 90deg; }
-.pips.is-hinting b:nth-child(2) { rotate: 135deg; transition-delay: 70ms; }
-.pips.is-hinting b:nth-child(3) { transition-delay: 140ms; }
+/* hints.js: now and then they wave, one after another: each leans out a little, softens into a
+   rounded square as it shows the next colour, and bounces back */
+@keyframes pip-wave {
+  0%   { translate: 0 0; scale: 1; border-radius: 0; }
+  35%  { translate: -5px 0; scale: 1.18; border-radius: 32%; }
+  65%  { translate: 1px 0; scale: .96; border-radius: 22%; }
+  100% { translate: 0 0; scale: 1; border-radius: 0; }
+}
+.pips.is-hinting b { animation: pip-wave 720ms cubic-bezier(.3, 1.4, .5, 1) both; }
+.pips.is-hinting b:nth-child(2) { rotate: 0deg; animation-delay: 110ms; }
+.pips.is-hinting b:nth-child(3) { animation-delay: 220ms; }
+@media (prefers-reduced-motion: reduce) { .pips.is-hinting b { animation: none; } }
 
 /* The brand's target mark, in the site palette */
 .target {

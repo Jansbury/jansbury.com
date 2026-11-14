@@ -1,10 +1,10 @@
 // Small hints that the page can be played with.
-// The line under the logo opens to show "contact" every few seconds, then folds back, until the
+// The line under the logo opens to ask "get in touch?" every few seconds, then folds back, until the
 // visitor does anything (touches, clicks, presses a key or points at it). Now and then the dot grid draws its next picture by itself.
 // Never with reduced motion, and nothing ticks while the tab is hidden.
-const CONTACT_EVERY = 6000; // ms between peeks
+const CONTACT_EVERY = 11_600; // ms between peeks: 8.8s hidden between each
 const CONTACT_FIRST = 2500; // ms after load, once the page has assembled
-const PEEK = 1600;          // ms the word stays open
+const PEEK = 2800;          // ms the hint stays open
 const DOTS_EVERY = 20_000;  // ms between pictures
 const DOTS_HOLD = 1800;     // ms a picture stays
 const PIPS_EVERY = 14_000;  // ms between spins of the colour squares, until they're used
