@@ -182,7 +182,7 @@ button { -webkit-tap-highlight-color: transparent; }
   width: calc(var(--line) * var(--p)); height: var(--p);
 }
 /* While open, an invisible pad joins the line to the names so the pointer can travel between them */
-.sign.is-open::before {
+.sign.is-open::before, .sign.is-peeking::before {
   content: ""; position: absolute; left: 0; top: 0;
   width: calc(var(--cols) * var(--p)); height: calc((var(--drop) + 8) * var(--p));
 }
@@ -196,7 +196,7 @@ button { -webkit-tap-highlight-color: transparent; }
   width: calc(var(--w) * var(--p)); height: calc(7 * var(--p));
   pointer-events: none;
 }
-.is-open .sign__word { pointer-events: auto; }
+.is-open .sign__word, .is-peeking .sign__word { pointer-events: auto; }
 .sign__word b {
   position: absolute; left: 0; top: 0;
   width: var(--p); height: var(--p); border-radius: 50%;
@@ -205,12 +205,9 @@ button { -webkit-tap-highlight-color: transparent; }
   scale: .55;
   transition: translate 460ms var(--ease) calc(var(--d) * 5ms), scale var(--t) var(--ease);
 }
-.is-open .sign__word b { translate: calc(var(--x) * var(--p)) calc(var(--y) * var(--p)); scale: .85; }
+/* .is-peeking (hints.js): the same letters, shown for a moment as a hint, with no link behind them */
+.is-open .sign__word b, .is-peeking .sign__word b { translate: calc(var(--x) * var(--p)) calc(var(--y) * var(--p)); scale: .85; }
 .is-open .sign__word:hover b, .is-open .sign__word:focus-visible b { scale: 1.1; }
-/* hints.js: the resting line ripples, left to right, until the visitor does something */
-.sign.is-hinting:not(.is-open) .sign__word b { animation: ripple 700ms var(--ease) calc(var(--rx) * 20ms); }
-/* each dot hops up a couple of cells and swells, so a wave runs along the line */
-@keyframes ripple { 40% { scale: 1.15; translate: calc(var(--rx) * var(--p)) calc((var(--ry) - 2.4) * var(--p)); } }
 @media (prefers-reduced-motion: reduce) {
   .sign__word b { transition: none; }
 }

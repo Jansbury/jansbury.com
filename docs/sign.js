@@ -69,7 +69,19 @@ if (sign) {
   });
 }
 
+// A peek (hints.js) shows the letters for a moment without setting any address. If the visitor
+// opens the line during it, theirs takes over and stays.
+let peekTimer = 0;
+function peek(ms) {
+  if (sign.classList.contains("is-open")) return;
+  sign.classList.add("is-peeking");
+  clearTimeout(peekTimer);
+  peekTimer = setTimeout(() => sign.classList.remove("is-peeking"), ms);
+}
+
 function setOpen(open) {
+  clearTimeout(peekTimer);
+  sign.classList.remove("is-peeking");
   if (open) links.forEach(([a, code]) => {
     if (a.href) return;
     a.href = [...atob(code)].reverse().join("");
@@ -81,6 +93,11 @@ function setOpen(open) {
 }
 
 if (sign) {
+  sign.addEventListener("peek", (e) => peek(e.detail));
+  // A tap on a peeked letter opens the line for real first, so the link it lands on works
+  sign.addEventListener("pointerdown", (e) => {
+    if (sign.classList.contains("is-peeking") && e.target.closest(".sign__word")) setOpen(true);
+  });
   sign.addEventListener("pointerenter", (e) => { if (e.pointerType === "mouse") setOpen(true); });
   sign.addEventListener("pointerleave", (e) => { if (e.pointerType === "mouse") setOpen(false); });
   // Touch and keyboard toggle; a mouse already opened it on hover. Safari's click event carries no

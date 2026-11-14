@@ -1,10 +1,10 @@
 // Small hints that the page can be played with.
-// The line under the logo ripples every few seconds until the visitor does anything (touches,
-// clicks, presses a key or points at it). Now and then the dot grid draws its next picture by itself.
+// The line under the logo opens to show "contact" every few seconds, then folds back, until the
+// visitor does anything (touches, clicks, presses a key or points at it). Now and then the dot grid draws its next picture by itself.
 // Never with reduced motion, and nothing ticks while the tab is hidden.
-const CONTACT_EVERY = 5000; // ms between ripples
+const CONTACT_EVERY = 6000; // ms between peeks
 const CONTACT_FIRST = 2500; // ms after load, once the page has assembled
-const RIPPLE = 1400;        // ms: long enough for the ripple in site.css to cross the line
+const PEEK = 1600;          // ms the word stays open
 const DOTS_EVERY = 20_000;  // ms between pictures
 const DOTS_HOLD = 1800;     // ms a picture stays
 
@@ -35,12 +35,10 @@ function every(ms, first, fn) {
 
 if (sign) {
   const stop = every(CONTACT_EVERY, CONTACT_FIRST, () => {
-    sign.classList.add("is-hinting");
-    setTimeout(() => sign.classList.remove("is-hinting"), RIPPLE);
+    sign.dispatchEvent(new CustomEvent("peek", { detail: PEEK }));
   });
   const done = () => {
     stop();
-    sign.classList.remove("is-hinting");
     removeEventListener("pointerdown", done, true);
     removeEventListener("keydown", done, true);
     sign.removeEventListener("pointerenter", done);
