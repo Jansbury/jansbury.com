@@ -290,4 +290,22 @@ if (handle) {
     e.preventDefault();
   });
   handle.addEventListener("blur", release);
+
+  // The page's one-time demo (hints.js): slide a few hours along, then let go, as a drag would
+  const DEMO_HOURS = 6;
+  const DEMO_SLIDE = 700; // ms
+  bar.addEventListener("hint", () => {
+    if (still.matches) return;
+    const a = auckland(new Date());
+    const from = a.h * 60 + a.m;
+    const to = from + DEMO_HOURS * 60 <= LAST ? from + DEMO_HOURS * 60 : from - DEMO_HOURS * 60; // back, late in the day
+    const start = performance.now();
+    const step = (t) => {
+      const k = Math.min(1, (t - start) / DEMO_SLIDE);
+      scrubToMinute(from + (to - from) * (1 - (1 - k) ** 3));
+      if (k < 1) easing = requestAnimationFrame(step);
+    };
+    easing = requestAnimationFrame(step);
+  });
+  bar.addEventListener("unhint", release);
 }

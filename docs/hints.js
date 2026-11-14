@@ -1,6 +1,7 @@
 // Nothing on the page says it can be played with, so once per visit, just after it has assembled,
-// each toy does a little of its trick in turn: the dots say "Hi", the squares turn, the day bar shows
-// its hours and the line under the logo ripples. Touching or pressing anything stops the rest.
+// each toy does a little of its trick in quick turns: the dots say "Hi", the squares turn, the day
+// bar slides a few hours on and back, and the line under the logo ripples. Touching or pressing
+// anything stops the rest.
 // Later, if the contact line still hasn't been opened, it ripples once more.
 // Never with reduced motion, and never while the tab is hidden.
 const START = 2200;          // ms after load, once the assembly has finished
@@ -13,8 +14,10 @@ const pips = document.querySelector("[data-palette-switch]");
 const bar = document.querySelector("[data-scrub]");
 const sign = document.querySelector("[data-sign]");
 
-// [element, how long it holds, ms]. The dots run their own trick (eggs.js); the rest take a class.
-const STEPS = [[dots, 1500], [pips, 900], [bar, 1400], [sign, 1100]].filter(([el]) => el);
+// [element, how long it holds, ms]. Each starts a moment after the one before, so they overlap.
+// The dots and the day bar run their own tricks (eggs.js, clock.js); the others take a class.
+const STEPS = [[dots, 1200], [pips, 700], [bar, 1100], [sign, 900]].filter(([el]) => el);
+const STAGGER = 550;
 
 const wait = (ms) => new Promise((done) => setTimeout(done, ms));
 const visible = () => new Promise((done) => {
@@ -27,7 +30,7 @@ const visible = () => new Promise((done) => {
 });
 
 function hint(el, on) {
-  if (el === dots) el.dispatchEvent(new Event(on ? "hint" : "unhint"));
+  if (el === dots || el === bar) el.dispatchEvent(new Event(on ? "hint" : "unhint"));
   else el.classList.toggle("is-hinting", on);
 }
 
@@ -44,9 +47,8 @@ async function demo() {
     await visible();
     if (stopped) return;
     hint(el, true);
-    await wait(hold);
-    hint(el, false);
-    await wait(250);
+    wait(hold).then(() => hint(el, false));
+    await wait(STAGGER);
   }
 }
 

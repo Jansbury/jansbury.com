@@ -142,7 +142,7 @@ button { -webkit-tap-highlight-color: transparent; }
   .line .is-reprint { animation: wipe-in 420ms var(--ease) both; }
   .line .l.is-reprint { animation-duration: 640ms; animation-delay: 80ms; } /* the longer line takes longer */
 }
-.line .lc { text-transform: none; }
+.line .lc, .line.is-plain { text-transform: none; } /* palette.js: every other headline is in ordinary case */
 
 /* Headline plus a sentence of plain copy */
 .copy {

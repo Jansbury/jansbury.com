@@ -59,6 +59,9 @@ const LINES = [
 const LINE_KEY = "jansbury-last-line";
 let line = 0;
 
+// The headline takes turns between capitals and ordinary case, starting either way
+let caps = Math.random() < .5;
+
 const WIPE_OUT = 200; // ms; matches the wipe-out animation in site.css
 let swap = 0;
 
@@ -75,6 +78,8 @@ function setLine(n, wipe = false) {
     return el;
   };
   const write = () => {
+    caps = !caps;
+    does.closest(".line")?.classList.toggle("is-plain", !caps);
     does.textContent = LINES[n][0];
     what.replaceChildren(...LINES[n][1].split("*").flatMap((part, i) => {
       if (i % 2) return [wrap("em", part)];
