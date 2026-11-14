@@ -208,7 +208,6 @@ button { -webkit-tap-highlight-color: transparent; }
   background: var(--ink);
   translate: calc(var(--rx) * var(--p)) calc(var(--ry) * var(--p));
   scale: .55;
-  transition: translate 460ms var(--ease) calc(var(--d) * 5ms), scale var(--t) var(--ease), opacity var(--t) var(--ease);
 }
 .is-open .sign__word b { translate: calc(var(--x) * var(--p)) calc(var(--y) * var(--p)); scale: .85; }
 /* .is-peeking (hints.js): the line spells "get in touch?" for a moment instead, with no link behind
@@ -219,6 +218,10 @@ button { -webkit-tap-highlight-color: transparent; }
 .is-peeking .sign__word:not(.sign__hint) b { opacity: 0; }
 .is-open .sign__hint { pointer-events: none; }
 .is-open .sign__hint b { opacity: 0; translate: calc(var(--rx) * var(--p)) calc(var(--ry) * var(--p)); scale: .55; }
+/* When the peek ends, the hint's dots fly back into the line before they fade, and the link's dots
+   reappear once they've landed. When it starts, both swap at once. */
+.sign__word b { transition: translate 460ms var(--ease) calc(var(--d) * 5ms), scale var(--t) var(--ease), opacity 160ms var(--ease) 850ms; }
+.is-peeking .sign__word b { transition: translate 460ms var(--ease) calc(var(--d) * 5ms), scale var(--t) var(--ease), opacity 120ms var(--ease); }
 .is-open .sign__word:hover b, .is-open .sign__word:focus-visible b { scale: 1.1; }
 @media (prefers-reduced-motion: reduce) {
   .sign__word b { transition: none; }
