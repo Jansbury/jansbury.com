@@ -238,9 +238,26 @@ button { -webkit-tap-highlight-color: transparent; }
   padding: .75rem;
   border: 0; background: none; cursor: pointer;
 }
-.pips b { display: block; width: var(--pip); aspect-ratio: 1; background: var(--ink); transition: rotate var(--t) var(--ease); }
-.pips:focus-visible b:nth-child(2) { rotate: 45deg; }
-@media (hover: hover) { .pips:hover b:nth-child(2) { rotate: 45deg; } }
+.pips b {
+  display: block; width: var(--pip); aspect-ratio: 1; background: var(--ink);
+  transition: rotate 420ms var(--ease), background-color var(--t) var(--ease);
+}
+/* Pointed at, focused or hinting, they become swatches of the next three colours (palette.js sets
+   --n1..3), each edged in ink so it shows on any field */
+.pips:focus-visible b, .pips.is-hinting b { outline: var(--hair) solid var(--ink); outline-offset: calc(-1 * var(--hair)); }
+.pips:focus-visible b:nth-child(1), .pips.is-hinting b:nth-child(1) { background: var(--n1); }
+.pips:focus-visible b:nth-child(2), .pips.is-hinting b:nth-child(2) { background: var(--n2); rotate: 45deg; }
+.pips:focus-visible b:nth-child(3), .pips.is-hinting b:nth-child(3) { background: var(--n3); }
+@media (hover: hover) {
+  .pips:hover b { outline: var(--hair) solid var(--ink); outline-offset: calc(-1 * var(--hair)); }
+  .pips:hover b:nth-child(1) { background: var(--n1); }
+  .pips:hover b:nth-child(2) { background: var(--n2); rotate: 45deg; }
+  .pips:hover b:nth-child(3) { background: var(--n3); }
+}
+/* hints.js: now and then they spin a quarter turn, one after another */
+.pips.is-hinting b { rotate: 90deg; }
+.pips.is-hinting b:nth-child(2) { rotate: 135deg; transition-delay: 70ms; }
+.pips.is-hinting b:nth-child(3) { transition-delay: 140ms; }
 
 /* The brand's target mark, in the site palette */
 .target {

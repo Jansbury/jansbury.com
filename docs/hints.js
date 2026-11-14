@@ -7,10 +7,13 @@ const CONTACT_FIRST = 2500; // ms after load, once the page has assembled
 const PEEK = 1600;          // ms the word stays open
 const DOTS_EVERY = 20_000;  // ms between pictures
 const DOTS_HOLD = 1800;     // ms a picture stays
+const PIPS_EVERY = 14_000;  // ms between spins of the colour squares, until they're used
+const PIPS_HOLD = 1200;     // ms they show the next colours
 
 const calm = matchMedia("(prefers-reduced-motion: reduce)");
 const dots = document.querySelector(".dots");
 const sign = document.querySelector("[data-sign]");
+const pips = document.querySelector("[data-palette-switch]");
 
 // Runs `fn` every `ms` of visible time, the first time after `first`. Returns a stop function.
 function every(ms, first, fn) {
@@ -57,4 +60,12 @@ if (dots) {
     dots.dispatchEvent(new Event("hint"));
     setTimeout(() => { if (!over) dots.dispatchEvent(new Event("unhint")); }, DOTS_HOLD);
   });
+}
+
+if (pips) {
+  const stop = every(PIPS_EVERY, PIPS_EVERY / 2, () => {
+    pips.classList.add("is-hinting");
+    setTimeout(() => pips.classList.remove("is-hinting"), PIPS_HOLD);
+  });
+  pips.addEventListener("click", () => { stop(); pips.classList.remove("is-hinting"); }, { once: true });
 }

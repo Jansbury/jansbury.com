@@ -135,8 +135,16 @@ function startCycle() {
   schedule();
 }
 
+// The squares preview what's coming: the next three background colours, shown on them while they
+// are pointed at, focused or hinting (site.css)
+function preview(pips) {
+  const at = order.indexOf(root.dataset.theme);
+  [1, 2, 3].forEach((k) => pips?.style.setProperty(`--n${k}`, `var(--${order[(at + k) % order.length]})`));
+}
+
 function reprint() {
   apply(order[(order.indexOf(root.dataset.theme) + 1) % order.length]);
+  preview(document.querySelector("[data-palette-switch]"));
   setLine((line + 1) % LINES.length);
   knock();
   startCycle(); // a full pause, then another round
@@ -157,6 +165,7 @@ document.addEventListener("DOMContentLoaded", () => {
   startCycle();
 
   const pips = document.querySelector("[data-palette-switch]");
+  preview(pips);
   pips?.addEventListener("click", reprint);
   // A mouse or touch press shouldn't leave the focus ring behind (it shows after typing to the
   // dots, since the browser then treats the page as keyboard-driven); Tab still focuses it.
