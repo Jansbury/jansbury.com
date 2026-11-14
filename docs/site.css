@@ -113,8 +113,8 @@ button { -webkit-tap-highlight-color: transparent; }
 .time__k, .time__diff { margin: 0; }
 .time__k { font-family: var(--sans); font-size: var(--tk); line-height: 1.45; }
 /* Dot-matrix digits (clock.js builds them): 5x7 cells, one em tall */
-/* The right padding holds am/pm, so all three lines share one right edge; even gaps above and below */
-.time__v { font-size: var(--tv); line-height: 1; margin-block: .15em; padding-right: .27em; }
+/* The digits end on the same right edge as the lines above and below; am/pm hangs just outside it */
+.time__v { font-size: var(--tv); line-height: 1; margin-block: .15em; }
 .dm { display: flex; justify-content: flex-end; gap: .16em; height: 1em; }
 .dm i { display: grid; grid-template-columns: repeat(5, 1fr); grid-template-rows: repeat(7, 1fr); width: .714em; }
 .dm i.colon { grid-template-columns: 1fr; width: .143em; }
