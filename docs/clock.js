@@ -256,6 +256,25 @@ function setHands(now) {
   turn("hr", ((now.getHours() % 12) + now.getMinutes() / 60) * 30);
   turn("mn", now.getMinutes() * 6);
 }
+// Point at the target (or tap it) and the hands swing round to 4:20 until you move away (or tap
+// again, or tap elsewhere). The seconds hand keeps going.
+const face = document.querySelector(".target");
+let fourTwenty = false;
+function showFourTwenty(on) {
+  if (on === fourTwenty) return;
+  fourTwenty = on;
+  if (on) { turn("hr", 4 * 30 + 10); turn("mn", 20 * 6); }
+  else setHands(new Date(Date.now() + shift));
+}
+if (face) {
+  face.addEventListener("pointerenter", (e) => { if (e.pointerType === "mouse") showFourTwenty(true); });
+  face.addEventListener("pointerleave", (e) => { if (e.pointerType === "mouse") showFourTwenty(false); });
+  face.addEventListener("pointerup", (e) => { if (e.pointerType !== "mouse") showFourTwenty(!fourTwenty); });
+  document.addEventListener("pointerdown", (e) => {
+    if (e.pointerType !== "mouse" && !face.contains(e.target)) showFourTwenty(false);
+  });
+}
+
 // The target cuts in at 900ms (site.css); the hands set off just after
 setTimeout(() => { handsHeld = false; render(); }, still.matches ? 0 : 950);
 
@@ -264,6 +283,18 @@ let shift = 0;
 let scrubbing = false;
 let easing = 0;
 
+// What Jans is likely up to, in Auckland time: asleep at night, at work on weekday working hours,
+// out enjoying the weekend on Saturday and Sunday days. A guess from the clock, not a status.
+const WORK_FROM = 9;   // 09:00...
+const WORK_UNTIL = 17; // ...to 17:00, Monday to Friday
+function doing(a, night) {
+  if (night) return "Asleep in";
+  const day = new Date(Date.UTC(a.y, a.mo - 1, a.d)).getUTCDay(); // 0 Sunday ... 6 Saturday
+  if (day === 0 || day === 6) return "Enjoying the weekend in";
+  if (a.h >= WORK_FROM && a.h < WORK_UNTIL) return "At work in";
+  return "";
+}
+
 function render() {
   const now = new Date(Date.now() + shift);
   const a = auckland(now);
@@ -271,7 +302,7 @@ function render() {
   const apart = gap(now, a);
 
   // Hands: the visitor's local time
-  if (!handsHeld) setHands(now);
+  if (!handsHeld && !fourTwenty) setHands(now);
   root.style.setProperty("--day", (minute / DAY).toFixed(4));
 
   // The plate (site.css turns units into pixels for the screen size)
@@ -293,7 +324,12 @@ function render() {
     const counting = countsUp() && !shift;
     if (counting) drawSince(Date.now());
     else drawTime(a.h, a.m);
-    labelEl.textContent = (night ? "Asleep in Auckland, NZ" : "Auckland, NZ") + temp;
+    const status = doing(a, night);
+    const line = document.createElement("span"); // its own line; the smallest screens leave it out (site.css)
+    line.className = "time__s";
+    line.textContent = status;
+    labelEl.replaceChildren(...(status ? [line] : []), "Auckland, NZ" + temp);
+    root.style.setProperty("--k-extra", status ? 1 : 0); // the extra line, so the layouts make room (site.css)
     diffEl.textContent = scrubbing && apart.offset !== 0
       ? `${say(now.getHours(), now.getMinutes())} where you are`
       : inWords(apart) + (temperature === null || !fahrenheit
