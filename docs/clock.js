@@ -81,6 +81,14 @@ function inWords({ offset, days }) {
   return `${amount} behind${days < 0 ? ", still yesterday" : ""}`;
 }
 
+// How far the slider has moved the clock from now: "In 5hr", "2½hr ago", "Now"
+function away(ms) {
+  const mins = Math.round(Math.abs(ms) / 60_000 / 15) * 15;
+  if (mins === 0) return "Now";
+  const amount = `${Math.floor(mins / 60) || ""}${FRACTIONS[mins % 60] ?? ""}hr`;
+  return ms > 0 ? `In ${amount}` : `${amount} ago`;
+}
+
 // Auckland time is drawn as a 5x7 dot matrix, in the same round dots as the dot grid.
 // The dots stay in place and switch on and off, so digits morph into each other.
 const bits = (rows) => [...rows.replace(/ /g, "")].map((bit) => bit === "1");
@@ -336,8 +344,10 @@ function render() {
     line.textContent = status;
     labelEl.replaceChildren(...(status ? [line] : []), "Auckland, NZ" + temp);
     root.style.setProperty("--k-extra", status ? 1 : 0); // the extra line, so the layouts make room (site.css)
-    diffEl.textContent = scrubbing && apart.offset !== 0
-      ? `${say(now.getHours(), now.getMinutes())} where you are`
+    // While the slider is away from now, the line says how far it has gone, and for visitors
+    // elsewhere what time that is for them, on one line so the clock doesn't jump, so a dragged clock always reads as "later" or "earlier"
+    diffEl.textContent = scrubbing
+      ? away(shift) + (apart.offset !== 0 ? `, ${say(now.getHours(), now.getMinutes())} for you` : "")
       : inWords(apart) + (temperature === null || !fahrenheit
         ? "" : `\n${Math.round(temperature)}°C is ${Math.round(temperature * 9 / 5 + 32)}°F to you`);
     if (counting && IN_NZ) diffEl.textContent = "Since my last git commit"; // says what the digits count
