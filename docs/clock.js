@@ -70,11 +70,9 @@ const FRACTIONS = { 15: "¼", 30: "½", 45: "¾" };
 function inWords({ offset, days }) {
   if (offset === 0) return "Same time as you";
   const abs = Math.abs(offset);
-  const whole = Math.floor(abs / 60);
-  const amount = `${whole || ""}${FRACTIONS[abs % 60] ?? ""}`;
-  const unit = abs <= 60 ? "hour" : "hours"; // "½ hour", "1 hour", "1½ hours"
-  if (offset > 0) return `${amount} ${unit} ahead of you${days > 0 ? ",\nalready tomorrow" : ""}`;
-  return `${amount} ${unit} behind you${days < 0 ? ",\nstill yesterday" : ""}`;
+  const amount = `${Math.floor(abs / 60) || ""}${FRACTIONS[abs % 60] ?? ""}hr`; // "18hr", "½hr", "5¾hr"
+  if (offset > 0) return `${amount} ahead${days > 0 ? ", already tomorrow" : ""}`;
+  return `${amount} behind${days < 0 ? ", still yesterday" : ""}`;
 }
 
 // Auckland time is drawn as a 5x7 dot matrix in the same round dots as the "Hi" grid.
@@ -123,19 +121,15 @@ function createMatrix(el) {
 }
 const drawTime = timeEl ? createMatrix(timeEl) : null;
 
-// The temperature in Auckland now, and where the visitor is, from Open-Meteo (free, no key). The
-// visitor's place is only their time zone's city (zones.json, from the tz database), so nothing more
-// exact about them is sent, and nothing is asked. Checked every half hour; if it fails, the labels
-// simply have no temperature.
-const AUCKLAND = [-36.85, 174.76];
-const WEATHER = "https://api.open-meteo.com/v1/forecast";
+// The temperature in Auckland now, from Open-Meteo (free, no key, sends nothing about the visitor:
+// the request carries only Auckland's coordinates). Checked every half hour; if it fails, the
+// labels simply have no temperature.
+const WEATHER = "https://api.open-meteo.com/v1/forecast?latitude=-36.85&longitude=174.76&current=temperature_2m";
 const WEATHER_EVERY = 30 * 60_000;
-let temperature = null; // Auckland, °C, unrounded
-let hereTemperature = null; // the visitor's zone city, °C
-let herePlace; // [lat, lon], null when unknown or the same weather as Auckland's
+let temperature = null; // °C, unrounded
 
-// Auckland's is in °C, as it is there. The visitor's is in their own unit: Fahrenheit where that is the everyday scale (the US and a few
-// others), Celsius everywhere else. The region comes from the browser's language when it names one
+// Auckland's is in °C, as it is there. Visitors who think in Fahrenheit (the US and a few others)
+// also get it converted, under the clock. The region comes from the browser's language when it names one
 // ("en-US", not just "en"), otherwise from the time zone.
 const FAHRENHEIT = new Set(["US", "PR", "GU", "VI", "AS", "MP", "UM", "BS", "BZ", "KY", "LR", "PW", "FM", "MH"]);
 const US_ZONE = /^(America\/(New_York|Chicago|Denver|Los_Angeles|Phoenix|Anchorage|Detroit|Boise|Juneau|Sitka|Nome|Yakutat|Metlakatla|Adak|Menominee|Puerto_Rico|Indiana\/.+|Kentucky\/.+|North_Dakota\/.+)|Pacific\/(Honolulu|Guam|Saipan|Pago_Pago)|US\/.+)$/;
@@ -143,30 +137,13 @@ const region = (navigator.languages ?? [navigator.language])
   .map((tag) => { try { return new Intl.Locale(tag).region; } catch { return undefined; } })
   .find(Boolean);
 const fahrenheit = region ? FAHRENHEIT.has(region) : US_ZONE.test(zone);
-const inUnit = (c) => (fahrenheit ? `${Math.round(c * 9 / 5 + 32)}°F` : `${Math.round(c)}°C`);
-async function findHere() {
-  if (herePlace !== undefined) return herePlace;
-  herePlace = null;
-  if (zone === ZONE || !zone.includes("/")) return null;
-  try {
-    const res = await fetch("zones.json");
-    if (res.ok) herePlace = (await res.json())[zone] ?? null;
-  } catch { /* no table: Auckland only */ }
-  return herePlace;
-}
 async function checkWeather() {
   try {
-    const places = [AUCKLAND];
-    const here = await findHere();
-    if (here) places.push(here);
-    const url = `${WEATHER}?latitude=${places.map((p) => p[0]).join(",")}`
-      + `&longitude=${places.map((p) => p[1]).join(",")}&current=temperature_2m`;
-    const res = await fetch(url, { referrerPolicy: "no-referrer", credentials: "omit" });
+    const res = await fetch(WEATHER, { referrerPolicy: "no-referrer", credentials: "omit" });
     if (!res.ok) return;
-    const data = [].concat(await res.json()).map((d) => d?.current?.temperature_2m);
-    if (typeof data[0] !== "number") return;
-    temperature = data[0];
-    hereTemperature = typeof data[1] === "number" ? data[1] : null;
+    const t = (await res.json())?.current?.temperature_2m;
+    if (typeof t !== "number") return;
+    temperature = t;
     render();
   } catch { /* offline or blocked: leave the labels as they are */ }
 }
@@ -209,7 +186,8 @@ function render() {
     labelEl.textContent = (night ? "Asleep in Auckland, NZ" : "Auckland, NZ") + temp;
     diffEl.textContent = scrubbing && apart.offset !== 0
       ? `${pad(now.getHours())}:${pad(now.getMinutes())} where you are`
-      : inWords(apart) + (hereTemperature === null || scrubbing ? "" : `\n${inUnit(hereTemperature)} where you are`);
+      : inWords(apart) + (temperature === null || !fahrenheit
+        ? "" : `\n${Math.round(temperature)}°C is ${Math.round(temperature * 9 / 5 + 32)}°F to you`);
     // Lines past the first, so the narrow layout can make room for them (site.css)
     root.style.setProperty("--diff-extra", diffEl.textContent.split("\n").length - 1);
     box.hidden = false;
