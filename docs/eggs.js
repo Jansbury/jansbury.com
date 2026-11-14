@@ -42,8 +42,8 @@ if (dots) {
     dots.classList.remove("is-spelling");
   }
 
-  // The page's one-time demo (hints.js) shows "Hi" without moving on to the next picture
-  dots.addEventListener("hint", () => spell(HI));
+  // Now and then the grid draws its next picture by itself (hints.js)
+  dots.addEventListener("hint", show);
   dots.addEventListener("unhint", settle);
   dots.addEventListener("pointerenter", (e) => { if (e.pointerType === "mouse") show(); });
   dots.addEventListener("pointerleave", (e) => { if (e.pointerType === "mouse") settle(); });

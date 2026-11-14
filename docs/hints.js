@@ -1,79 +1,62 @@
-// Nothing on the page says it can be played with, so once per visit, just after it has assembled,
-// each toy does a little of its trick in quick turns: the dots say "Hi", the squares turn, the day
-// bar slides a few hours on and back, and the line under the logo ripples. Touching or pressing
-// anything stops the rest.
-// Later, if the contact line still hasn't been opened, it ripples once more.
-// Never with reduced motion, and never while the tab is hidden.
-const START = 2200;          // ms after load, once the assembly has finished
-const CONTACT_AFTER = 25_000; // ms of the page being seen before the contact line asks again
-const KEY = "hinted";         // sessionStorage: the demo has run this visit
+// Small hints that the page can be played with.
+// The line under the logo ripples every few seconds until the visitor does anything (touches,
+// clicks, presses a key or points at it). Now and then the dot grid draws its next picture by itself.
+// Never with reduced motion, and nothing ticks while the tab is hidden.
+const CONTACT_EVERY = 5000; // ms between ripples
+const CONTACT_FIRST = 2500; // ms after load, once the page has assembled
+const RIPPLE = 1100;        // ms: long enough for the ripple in site.css to cross the line
+const DOTS_EVERY = 20_000;  // ms between pictures
+const DOTS_HOLD = 1800;     // ms a picture stays
 
 const calm = matchMedia("(prefers-reduced-motion: reduce)");
 const dots = document.querySelector(".dots");
-const pips = document.querySelector("[data-palette-switch]");
-const bar = document.querySelector("[data-scrub]");
 const sign = document.querySelector("[data-sign]");
 
-// [element, how long it holds, ms]. Each starts a moment after the one before, so they overlap.
-// The dots and the day bar run their own tricks (eggs.js, clock.js); the others take a class.
-const STEPS = [[dots, 1200], [pips, 700], [bar, 1100], [sign, 900]].filter(([el]) => el);
-const STAGGER = 550;
-
-const wait = (ms) => new Promise((done) => setTimeout(done, ms));
-const visible = () => new Promise((done) => {
-  if (!document.hidden) return done();
-  document.addEventListener("visibilitychange", function on() {
-    if (document.hidden) return;
-    document.removeEventListener("visibilitychange", on);
-    done();
+// Runs `fn` every `ms` of visible time, the first time after `first`. Returns a stop function.
+function every(ms, first, fn) {
+  let timer = 0;
+  let left = first; // ms still to wait
+  let from = Date.now();
+  let stopped = false;
+  const arm = () => {
+    clearTimeout(timer);
+    if (stopped || document.hidden || calm.matches) return;
+    from = Date.now();
+    timer = setTimeout(() => { fn(); left = ms; arm(); }, left);
+  };
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden) { clearTimeout(timer); left = Math.max(0, left - (Date.now() - from)); }
+    else arm();
   });
-});
-
-function hint(el, on) {
-  if (el === dots || el === bar) el.dispatchEvent(new Event(on ? "hint" : "unhint"));
-  else el.classList.toggle("is-hinting", on);
+  calm.addEventListener("change", arm);
+  arm();
+  return () => { stopped = true; clearTimeout(timer); };
 }
 
-let stopped = false;
-function stop() {
-  stopped = true;
-  STEPS.forEach(([el]) => hint(el, false));
-}
-
-async function demo() {
-  try { if (sessionStorage.getItem(KEY)) return; sessionStorage.setItem(KEY, "1"); } catch { /* every load, then */ }
-  await wait(START);
-  for (const [el, hold] of STEPS) {
-    await visible();
-    if (stopped) return;
-    hint(el, true);
-    wait(hold).then(() => hint(el, false));
-    await wait(STAGGER);
-  }
-}
-
-// The contact line asks again after a while on the page, unless it has been opened
-let contactSeen = false;
-async function nudgeContact() {
-  let seen = 0;
-  while (seen < CONTACT_AFTER) {
-    await visible();
-    await wait(1000);
-    if (!document.hidden) seen += 1000;
-  }
-  if (contactSeen || calm.matches) return;
-  hint(sign, true);
-  await wait(1100);
-  hint(sign, false);
-}
-
-if (!calm.matches && STEPS.length) {
-  addEventListener("pointerdown", stop, { once: true, capture: true });
-  addEventListener("keydown", stop, { once: true, capture: true });
-  demo();
-}
 if (sign) {
-  sign.addEventListener("pointerenter", () => { contactSeen = true; });
-  sign.addEventListener("focusin", () => { contactSeen = true; });
-  nudgeContact();
+  const stop = every(CONTACT_EVERY, CONTACT_FIRST, () => {
+    sign.classList.add("is-hinting");
+    setTimeout(() => sign.classList.remove("is-hinting"), RIPPLE);
+  });
+  const done = () => {
+    stop();
+    sign.classList.remove("is-hinting");
+    removeEventListener("pointerdown", done, true);
+    removeEventListener("keydown", done, true);
+    sign.removeEventListener("pointerenter", done);
+  };
+  addEventListener("pointerdown", done, true);
+  addEventListener("keydown", done, true);
+  sign.addEventListener("pointerenter", done);
+}
+
+if (dots) {
+  let over = false;
+  dots.addEventListener("pointerenter", () => { over = true; });
+  dots.addEventListener("pointerleave", () => { over = false; });
+  every(DOTS_EVERY, DOTS_EVERY, () => {
+    if (over || dots.classList.contains("is-spelling")) return; // someone is already playing
+    dots.dispatchEvent(new Event("hint"));
+    setTimeout(() => { if (!over) dots.dispatchEvent(new Event("unhint")); }, DOTS_HOLD);
+  });
 }

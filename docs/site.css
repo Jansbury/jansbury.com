@@ -115,6 +115,10 @@ button { -webkit-tap-highlight-color: transparent; }
 .dm i.colon { grid-template-columns: 1fr; width: .143em; }
 .dm b { border-radius: 50%; background: var(--ink); scale: 0; transition: scale var(--t) var(--ease); }
 .dm b.on { scale: .8; }
+.dm { position: relative; }
+/* am/pm: two small letters stacked just outside the digits, so the clock itself doesn't move */
+.dm__ap { position: absolute; left: 100%; bottom: 0; margin-left: .1em; display: grid; gap: .06em; }
+.dm .dm__ap i { width: .15em; height: .21em; }
 .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 @media (prefers-reduced-motion: reduce) { .dm b { transition: none; } }
 .time__diff { font-family: var(--serif); font-style: italic; font-size: var(--td); line-height: 1.2; white-space: pre-line; }
@@ -203,7 +207,7 @@ button { -webkit-tap-highlight-color: transparent; }
 }
 .is-open .sign__word b { translate: calc(var(--x) * var(--p)) calc(var(--y) * var(--p)); scale: .85; }
 .is-open .sign__word:hover b, .is-open .sign__word:focus-visible b { scale: 1.1; }
-/* hints.js: the resting line ripples, left to right */
+/* hints.js: the resting line ripples, left to right, until the visitor does something */
 .sign.is-hinting:not(.is-open) .sign__word b { animation: ripple 520ms var(--ease) calc(var(--rx) * 14ms); }
 @keyframes ripple { 45% { scale: 1; } }
 @media (prefers-reduced-motion: reduce) {
@@ -239,7 +243,6 @@ button { -webkit-tap-highlight-color: transparent; }
 .pips b { display: block; width: var(--pip); aspect-ratio: 1; background: var(--ink); transition: rotate var(--t) var(--ease); }
 .pips:focus-visible b:nth-child(2) { rotate: 45deg; }
 @media (hover: hover) { .pips:hover b:nth-child(2) { rotate: 45deg; } }
-.pips.is-hinting b:nth-child(2) { rotate: 45deg; } /* hints.js: the one-time demo */
 
 /* The brand's target mark, in the site palette */
 .target {
@@ -319,9 +322,9 @@ button { -webkit-tap-highlight-color: transparent; }
 .hours b:nth-child(3) { top: 50%; }
 .hours b:nth-child(4) { top: 75%; }
 .hours b:nth-child(5) { top: 100%; }
-html.is-scrubbing .hours b, .rule--v.is-hinting .hours b { opacity: 1; }
+html.is-scrubbing .hours b { opacity: 1; }
 @media (hover: hover) { .rule--v:has(.scrub:hover) .hours b { opacity: 1; } }
-html.is-scrubbing .rule--v::after, .rule--v.is-hinting::after { left: -9px; width: 19px; }
+html.is-scrubbing .rule--v::after { left: -9px; width: 19px; }
 
 /* ---------- Assembly on load: hard cuts, in reading order ---------- */
 @media (prefers-reduced-motion: no-preference) {

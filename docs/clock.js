@@ -78,7 +78,7 @@ function inWords({ offset, days }) {
 // Auckland time is drawn as a 5x7 dot matrix in the same round dots as the "Hi" grid.
 // The dots stay in place and switch on and off, so digits morph into each other.
 const bits = (rows) => [...rows.replace(/ /g, "")].map((bit) => bit === "1");
-export const GLYPHS = [
+const GLYPHS = [
   "01110 10001 10001 10001 10001 10001 01110",
   "00100 01100 00100 00100 00100 00100 01110",
   "01110 10001 00001 00010 00100 01000 11111",
@@ -91,6 +91,17 @@ export const GLYPHS = [
   "01110 10001 10001 01111 00001 00010 01100",
 ].map(bits);
 const COLON = bits("0 0 1 0 1 0 0");
+const BLANK = bits("0".repeat(35)); // the tens of the hour, from 1 to 9 o'clock
+// am and pm, as two small letters stacked beside the digits
+const LETTERS = {
+  A: bits("01110 10001 10001 11111 10001 10001 10001"),
+  P: bits("11110 10001 10001 11110 10000 10000 10000"),
+  M: bits("10001 11011 10101 10101 10001 10001 10001"),
+};
+
+// 12-hour time, as Auckland says it: "7:05pm"
+const twelve = (h) => h % 12 || 12;
+const say = (h, m) => `${twelve(h)}:${pad(m)}${h < 12 ? "am" : "pm"}`;
 
 // Builds the matrix inside `el` and returns a function that draws a time on it.
 function createMatrix(el) {
@@ -110,13 +121,25 @@ function createMatrix(el) {
   const digits = [glyph(35), glyph(35)];
   light(glyph(7, "colon"), COLON);
   digits.push(glyph(35), glyph(35));
+  const ap = document.createElement("span");
+  ap.className = "dm__ap";
+  const half = [0, 1].map(() => {
+    const g = document.createElement("i");
+    g.append(...Array.from({ length: 35 }, () => document.createElement("b")));
+    ap.append(g);
+    return [...g.children];
+  });
+  light(half[1], LETTERS.M);
+  matrix.append(ap);
   el.replaceChildren(spoken, matrix);
 
   return (h, m) => {
-    const text = `${pad(h)}:${pad(m)}`;
+    const text = say(h, m);
     if (spoken.textContent === text) return;
     spoken.textContent = text;
-    [text[0], text[1], text[3], text[4]].forEach((d, n) => light(digits[n], GLYPHS[d]));
+    const hh = String(twelve(h)).padStart(2, " ");
+    [hh[0], hh[1], ...pad(m)].forEach((d, n) => light(digits[n], d === " " ? BLANK : GLYPHS[d]));
+    light(half[0], h < 12 ? LETTERS.A : LETTERS.P);
   };
 }
 const drawTime = timeEl ? createMatrix(timeEl) : null;
@@ -203,7 +226,7 @@ function render() {
 
   if (handle) {
     handle.setAttribute("aria-valuenow", minute);
-    handle.setAttribute("aria-valuetext", `${pad(a.h)}:${pad(a.m)} in Auckland`);
+    handle.setAttribute("aria-valuetext", `${say(a.h, a.m)} in Auckland`);
   }
   if (box) {
     drawTime(a.h, a.m);
@@ -211,7 +234,7 @@ function render() {
     const temp = temperature === null || scrubbing ? "" : `, ${Math.round(temperature)}°C`;
     labelEl.textContent = (night ? "Asleep in Auckland, NZ" : "Auckland, NZ") + temp;
     diffEl.textContent = scrubbing && apart.offset !== 0
-      ? `${pad(now.getHours())}:${pad(now.getMinutes())} where you are`
+      ? `${say(now.getHours(), now.getMinutes())} where you are`
       : inWords(apart) + (temperature === null || !fahrenheit
         ? "" : `\n${Math.round(temperature)}°C is ${Math.round(temperature * 9 / 5 + 32)}°F to you`);
     // Lines past the first, so the narrow layout can make room for them (site.css)
@@ -290,22 +313,4 @@ if (handle) {
     e.preventDefault();
   });
   handle.addEventListener("blur", release);
-
-  // The page's one-time demo (hints.js): slide a few hours along, then let go, as a drag would
-  const DEMO_HOURS = 6;
-  const DEMO_SLIDE = 700; // ms
-  bar.addEventListener("hint", () => {
-    if (still.matches) return;
-    const a = auckland(new Date());
-    const from = a.h * 60 + a.m;
-    const to = from + DEMO_HOURS * 60 <= LAST ? from + DEMO_HOURS * 60 : from - DEMO_HOURS * 60; // back, late in the day
-    const start = performance.now();
-    const step = (t) => {
-      const k = Math.min(1, (t - start) / DEMO_SLIDE);
-      scrubToMinute(from + (to - from) * (1 - (1 - k) ** 3));
-      if (k < 1) easing = requestAnimationFrame(step);
-    };
-    easing = requestAnimationFrame(step);
-  });
-  bar.addEventListener("unhint", release);
 }
