@@ -128,14 +128,25 @@ const drawTime = timeEl ? createMatrix(timeEl) : null;
 // label simply has no temperature.
 const WEATHER = "https://api.open-meteo.com/v1/forecast?latitude=-36.85&longitude=174.76&current=temperature_2m";
 const WEATHER_EVERY = 30 * 60_000;
-let temperature = null;
+let temperature = null; // °C, unrounded
+
+// Shown in the visitor's own unit: Fahrenheit where that is the everyday scale (the US and a few
+// others), Celsius everywhere else. The region comes from the browser's language when it names one
+// ("en-US", not just "en"), otherwise from the time zone.
+const FAHRENHEIT = new Set(["US", "PR", "GU", "VI", "AS", "MP", "UM", "BS", "BZ", "KY", "LR", "PW", "FM", "MH"]);
+const US_ZONE = /^(America\/(New_York|Chicago|Denver|Los_Angeles|Phoenix|Anchorage|Detroit|Boise|Juneau|Sitka|Nome|Yakutat|Metlakatla|Adak|Menominee|Puerto_Rico|Indiana\/.+|Kentucky\/.+|North_Dakota\/.+)|Pacific\/(Honolulu|Guam|Saipan|Pago_Pago)|US\/.+)$/;
+const region = (navigator.languages ?? [navigator.language])
+  .map((tag) => { try { return new Intl.Locale(tag).region; } catch { return undefined; } })
+  .find(Boolean);
+const fahrenheit = region ? FAHRENHEIT.has(region) : US_ZONE.test(zone);
+const inUnit = (c) => (fahrenheit ? `${Math.round(c * 9 / 5 + 32)}°F` : `${Math.round(c)}°C`);
 async function checkWeather() {
   try {
     const res = await fetch(WEATHER, { referrerPolicy: "no-referrer", credentials: "omit" });
     if (!res.ok) return;
     const t = (await res.json())?.current?.temperature_2m;
     if (typeof t !== "number") return;
-    temperature = Math.round(t);
+    temperature = t;
     render();
   } catch { /* offline or blocked: leave the label as it is */ }
 }
@@ -174,7 +185,7 @@ function render() {
   if (box) {
     drawTime(a.h, a.m);
     // Live time only: a scrubbed hour shouldn't show today's temperature
-    const temp = temperature === null || scrubbing ? "" : `, ${temperature}°C`;
+    const temp = temperature === null || scrubbing ? "" : `, ${inUnit(temperature)}`;
     labelEl.textContent = (night ? "Asleep in Auckland, NZ" : "Auckland, NZ") + temp;
     diffEl.textContent = scrubbing && apart.offset !== 0
       ? `${pad(now.getHours())}:${pad(now.getMinutes())} where you are`
