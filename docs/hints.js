@@ -1,12 +1,13 @@
 // Small hints that the page can be played with.
 // The line under the logo opens to ask "get in touch?" every few seconds, then folds back, until the
-// visitor does anything (touches, clicks, presses a key or points at it). Now and then the dot grid draws its next picture by itself.
+// visitor does anything (touches, clicks, presses a key or points at it). When nobody's playing with it, the dot grid draws its next picture every few seconds.
 // Never with reduced motion, and nothing ticks while the tab is hidden.
 const CONTACT_EVERY = 11_600; // ms between peeks: 8.8s hidden between each
 const CONTACT_FIRST = 2500; // ms after load, once the page has assembled
 const PEEK = 2800;          // ms the hint stays open
-const DOTS_EVERY = 20_000;  // ms between pictures
-const DOTS_HOLD = 1800;     // ms a picture stays
+const DOTS_EVERY = 9000;    // ms between pictures while the grid is left alone
+const DOTS_HOLD = 2400;     // ms a picture stays
+const DOTS_QUIET = 30_000;  // ms the grid waits after someone plays with it
 const PIPS_EVERY = 14_000;  // ms between spins of the colour squares, until they're used
 const PIPS_HOLD = 1200;     // ms they show the next colours
 
@@ -53,10 +54,13 @@ if (sign) {
 
 if (dots) {
   let over = false;
-  dots.addEventListener("pointerenter", () => { over = true; });
-  dots.addEventListener("pointerleave", () => { over = false; });
-  every(DOTS_EVERY, DOTS_EVERY, () => {
-    if (over || dots.classList.contains("is-spelling")) return; // someone is already playing
+  let played = 0; // when someone last played with the grid
+  dots.addEventListener("pointerenter", () => { over = true; played = Date.now(); });
+  dots.addEventListener("pointerleave", () => { over = false; played = Date.now(); });
+  dots.addEventListener("pointerup", () => { played = Date.now(); });
+  every(DOTS_EVERY, DOTS_EVERY / 2, () => {
+    // Left alone, it cycles through its pictures; once someone plays with it, it waits a while
+    if (over || Date.now() - played < DOTS_QUIET || dots.classList.contains("is-spelling")) return;
     dots.dispatchEvent(new Event("hint"));
     setTimeout(() => { if (!over) dots.dispatchEvent(new Event("unhint")); }, DOTS_HOLD);
   });

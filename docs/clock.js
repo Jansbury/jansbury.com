@@ -67,12 +67,12 @@ function gap(now, a) {
 
 const FRACTIONS = { 15: "¼", 30: "½", 45: "¾" };
 
-// Visitors in New Zealand get a hello rather than a time difference. Their time zone tells us; it
+// Visitors in New Zealand need no time difference. Their time zone tells us; it
 // never leaves the browser. Others on the same clock (Fiji some months) just share the time.
 const IN_NZ = ["Pacific/Auckland", "NZ", "Antarctica/McMurdo"].includes(zone);
 
 function inWords({ offset, days }) {
-  if (offset === 0) return IN_NZ ? "You’re in Aotearoa too" : "Same time as you";
+  if (offset === 0) return IN_NZ ? "" : "Same time as you"; // in NZ the place line already says it
   const abs = Math.abs(offset);
   const amount = `${Math.floor(abs / 60) || ""}${FRACTIONS[abs % 60] ?? ""}hr`; // "18hr", "½hr", "5¾hr"
   if (offset > 0) return `${amount} ahead${days > 0 ? ", already tomorrow" : ""}`;
