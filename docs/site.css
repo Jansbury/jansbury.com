@@ -212,9 +212,10 @@ button { -webkit-tap-highlight-color: transparent; }
 .is-open .sign__word b { translate: calc(var(--x) * var(--p)) calc(var(--y) * var(--p)); scale: .85; }
 /* .is-peeking (hints.js): the line spells "get in touch?" for a moment instead, with no link behind
    it. The hint's dots wait unseen in the line; while they show, the link's dots fade out of it.
-   It's set at half size: a quiet question, not a second name. */
-.sign__hint b { opacity: 0; width: calc(var(--p) / 2); height: calc(var(--p) / 2); }
-.is-peeking .sign__hint b { opacity: 1; translate: calc(var(--x) * var(--p) / 2) calc(var(--y) * var(--p) / 2); scale: .85; }
+   It's set at half size: a quiet question, not a second name. In the line its dots are the line's
+   size, so the handover back is seamless. */
+.sign__hint b { opacity: 0; }
+.is-peeking .sign__hint b { opacity: 1; translate: calc(var(--x) * var(--p) / 2) calc(var(--y) * var(--p) / 2); scale: .425; }
 .is-peeking .sign__word:not(.sign__hint) b { opacity: 0; }
 .is-open .sign__hint { pointer-events: none; }
 .is-open .sign__hint b { opacity: 0; translate: calc(var(--rx) * var(--p)) calc(var(--ry) * var(--p)); scale: .55; }
@@ -339,14 +340,14 @@ html.is-scrubbing .hand--m, html.is-scrubbing .hand--h { transition: none; } /* 
 .dots {
   width: clamp(3.6rem, 5.4vw, 6.6rem); aspect-ratio: 1;
   right: 11%; top: calc(var(--tt) + var(--tg) * .62); /* tied to the target, clear of the clock */
-  display: grid; grid-template-columns: repeat(11, 1fr);
+  display: grid; grid-template-columns: repeat(15, 1fr);
   pointer-events: auto; cursor: default;
 }
 /* eggs.js: a 7x7 display. Dots never move. Drawing, the lit ones swell and the rest fade back to a
    faint grid, in a wave out from the middle (--d), so one picture morphs into the next */
 .dots b {
   display: block; border-radius: 50%; background: var(--ink); scale: .44;
-  transition: scale 420ms var(--ease) calc(var(--d, 0) * 24ms), opacity 420ms var(--ease) calc(var(--d, 0) * 24ms);
+  transition: scale 420ms var(--ease) calc(var(--d, 0) * 17ms), opacity 420ms var(--ease) calc(var(--d, 0) * 17ms);
 }
 .dots.is-spelling b { scale: .36; opacity: .22; }
 .dots.is-spelling b.on { scale: .86; opacity: 1; }
@@ -442,8 +443,8 @@ html.is-scrubbing .rule--v::after { left: -9px; width: 19px; }
   .hours b { left: 6px; font-size: .62rem; }
   .hours b::before { display: none; }
   /* The dots sit on the target's centre line, where its hands turn */
-  /* (.025 of the grid: the outer dots sit that far inside its box, so this puts them on the margin) */
-  .dots { right: auto; left: calc(var(--gutter) - 4.6rem * .025); width: 4.6rem; top: calc(var(--top) + var(--tg) / 2 - 2.3rem); }
+  /* (.019 of the grid: the outer dots sit that far inside its box, so this puts them on the margin) */
+  .dots { right: auto; left: calc(var(--gutter) - 4.6rem * .019); width: 4.6rem; top: calc(var(--top) + var(--tg) / 2 - 2.3rem); }
 }
 /* Taller still, the headline stacks into four lines. The height that needs grows with the width
    (about 91vw + 25.5rem), which a media query can't say, so the break steps up in bands.
@@ -518,7 +519,7 @@ html.is-scrubbing .rule--v::after { left: -9px; width: 19px; }
      sentence's, and the day bar runs from the top of the target down to it. */
   .pips { right: calc(var(--gutter) + var(--pip) / 2 - 22px); width: 44px; padding-inline: 0; }
   .rule--v { right: calc(var(--gutter) + var(--pip) / 2 - var(--hair) / 2); top: max(var(--top), var(--bar-clear)); bottom: var(--gutter); height: auto; }
-  .dots { width: var(--dots); top: calc(var(--top) + var(--tg) * .62); right: calc(var(--rail) - var(--dots) * .025); }
+  .dots { width: var(--dots); top: calc(var(--top) + var(--tg) * .62); right: calc(var(--rail) - var(--dots) * .019); }
   .time { right: var(--rail); bottom: var(--gutter); }
   .blurb { max-width: min(58ch, calc(100vw - var(--gutter) - var(--rail) - 14rem)); } /* short of the clock */
   .vert { display: none; }
