@@ -122,12 +122,16 @@ function createMatrix(el) {
 const drawTime = timeEl ? createMatrix(timeEl) : null;
 
 // The temperature in Auckland now, from Open-Meteo (free, no key, sends nothing about the visitor:
-// the request carries only Auckland's coordinates). Checked again on the minute tick once it is
-// half an hour old; if it fails, the labels simply have no temperature.
+// the request carries only Auckland's coordinates). Checked on the minute tick: every half hour
+// once it has one, sooner after a failure (a request that hangs is cut off after 8s, then tried
+// again in a minute, five, then every quarter hour). Until one succeeds, the label has no temperature.
 const WEATHER = "https://api.open-meteo.com/v1/forecast?latitude=-36.85&longitude=174.76&current=temperature_2m";
 const WEATHER_EVERY = 30 * 60_000;
+const WEATHER_RETRY = [60_000, 5 * 60_000, 15 * 60_000];
+const WEATHER_TIMEOUT = 8000;
 let temperature = null; // °C, unrounded
-let checkedAt = -Infinity;
+let nextCheck = 0;
+let failures = 0;
 
 // Auckland's is in °C, as it is there. Visitors who think in Fahrenheit (the US and a few others)
 // also get it converted, under the clock. The region comes from the browser's language when it names one
@@ -139,16 +143,22 @@ const region = (navigator.languages ?? [navigator.language])
   .find(Boolean);
 const fahrenheit = region ? FAHRENHEIT.has(region) : US_ZONE.test(zone);
 async function checkWeather() {
-  if (Date.now() - checkedAt < WEATHER_EVERY) return;
-  checkedAt = Date.now(); // set before the request, so a slow one isn't sent twice
+  if (Date.now() < nextCheck) return;
+  nextCheck = Infinity; // one request at a time
   try {
-    const res = await fetch(WEATHER, { referrerPolicy: "no-referrer", credentials: "omit" });
-    if (!res.ok) return;
-    const t = (await res.json())?.current?.temperature_2m;
-    if (typeof t !== "number") return;
+    const res = await fetch(WEATHER, {
+      referrerPolicy: "no-referrer", credentials: "omit", signal: AbortSignal.timeout?.(WEATHER_TIMEOUT), // older browsers just wait
+    });
+    const t = res.ok ? (await res.json())?.current?.temperature_2m : undefined;
+    if (typeof t !== "number") throw new Error(`no temperature (${res.status})`);
     temperature = t;
+    failures = 0;
+    nextCheck = Date.now() + WEATHER_EVERY;
     render();
-  } catch { /* offline or blocked: leave the labels as they are */ }
+  } catch {
+    // Offline, slow or blocked: keep any earlier reading and try again soon
+    nextCheck = Date.now() + WEATHER_RETRY[Math.min(failures++, WEATHER_RETRY.length - 1)];
+  }
 }
 
 // Scrubbing shifts every clock by `shift` ms; letting go eases it back to 0.
