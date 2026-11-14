@@ -128,6 +128,7 @@ button { -webkit-tap-highlight-color: transparent; }
 .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 @media (prefers-reduced-motion: reduce) { .dm b { transition: none; } }
 .time__diff { font-family: var(--serif); font-style: italic; font-size: var(--td); line-height: 1.2; white-space: pre-line; }
+.time__diff.is-note { font-family: var(--sans); font-style: normal; font-size: var(--tk); line-height: 1.45; } /* the commit clock's caption matches the place line */
 
 /* Headline: upright caps, italic connectives */
 .line {
@@ -531,7 +532,7 @@ html.is-scrubbing .rule--v::after { left: -9px; width: 19px; }
   .rule--v { right: calc(var(--gutter) + var(--pip) / 2 - var(--hair) / 2); top: max(var(--top), var(--bar-clear)); bottom: var(--gutter); height: auto; }
   .dots { width: var(--dots); top: calc(var(--top) + var(--tg) * .62); right: calc(var(--rail) - var(--dots) * .019); }
   .time { right: var(--rail); bottom: var(--gutter); }
-  .blurb { max-width: min(58ch, calc(100vw - var(--gutter) - var(--rail) - 15.5rem)); } /* short of the clock */
+  .blurb { max-width: min(58ch, calc(100vw - var(--gutter) - var(--rail) - 17rem)); } /* short of the clock */
   .vert { display: none; }
 }
 

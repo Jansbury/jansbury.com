@@ -290,18 +290,16 @@ function render() {
   if (box) {
     // Live time only: a scrubbed hour shouldn't show today's temperature
     const temp = temperature === null || scrubbing ? "" : `, ${Math.round(temperature)}°C`;
-    if (countsUp() && !shift) {
-      drawSince(Date.now());
-      labelEl.textContent = "Since my last git commit";
-    } else {
-      drawTime(a.h, a.m);
-      labelEl.textContent = (night ? "Asleep in Auckland, NZ" : "Auckland, NZ") + temp;
-    }
+    const counting = countsUp() && !shift;
+    if (counting) drawSince(Date.now());
+    else drawTime(a.h, a.m);
+    labelEl.textContent = (night ? "Asleep in Auckland, NZ" : "Auckland, NZ") + temp;
     diffEl.textContent = scrubbing && apart.offset !== 0
       ? `${say(now.getHours(), now.getMinutes())} where you are`
       : inWords(apart) + (temperature === null || !fahrenheit
         ? "" : `\n${Math.round(temperature)}°C is ${Math.round(temperature * 9 / 5 + 32)}°F to you`);
-    if (countsUp() && !shift) diffEl.textContent = ""; // the label above says it all
+    if (counting) diffEl.textContent = "Since my last git commit"; // says what the digits count
+    diffEl.classList.toggle("is-note", counting); // set like the place line above (site.css)
     // Lines past the first, so the narrow layout can make room for them (site.css)
     root.style.setProperty("--diff-extra", diffEl.textContent.split("\n").length - 1);
     box.hidden = false;
