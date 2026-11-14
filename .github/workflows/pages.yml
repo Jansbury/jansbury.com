@@ -1,0 +1,50 @@
+# Deploys docs/ to GitHub Pages, on every push to main and every 15 minutes.
+# Each run also writes docs/last-push.json: the time of Jans's latest push to any of his repos,
+# private ones included. Only the time is published, never a repo name. The read-only token
+# (secret PUSH_TOKEN: fine-grained, all repos, Metadata read) never leaves this job.
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: "*/15 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Latest push
+        env:
+          GH_TOKEN: ${{ secrets.PUSH_TOKEN }}
+        run: |
+          # Without the token, or if GitHub doesn't answer, this repo's last commit stands in
+          at=""
+          if [ -n "$GH_TOKEN" ]; then
+            at=$(gh api "/user/repos?affiliation=owner&sort=pushed&per_page=1" --jq '.[0].pushed_at' || true)
+          fi
+          [ -n "$at" ] || at=$(git log -1 --format=%cI)
+          echo "{\"at\":\"$at\"}" > docs/last-push.json
+          cat docs/last-push.json
+
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs
+      - id: deployment
+        uses: actions/deploy-pages@v4

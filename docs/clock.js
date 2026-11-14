@@ -152,16 +152,20 @@ const drawTime = (h, m) =>
   draw(String(twelve(h)).padStart(2, " ") + pad(m), h < 12 ? "A" : "P", "M", say(h, m));
 
 // Someone in New Zealand already knows the time here, so for them the clock counts the time since
-// Jans last pushed to this site: hours and minutes (H M beside the digits), and past 99 hours, days
-// and hours (D H). Every push deploys, and the page's Last-Modified header is when it deployed.
-// Browsers that don't get one report the time the page loaded; then there's nothing to count and
-// the clock stays a clock.
-const loaded = Date.now();
-const deployed = Date.parse(document.lastModified);
-const countsUp = IN_NZ && Number.isFinite(deployed) && Math.abs(loaded - deployed) > 5000;
+// Jans last pushed code, to any of his repos: hours and minutes (H M beside the digits), and past
+// 99 hours, days and hours (D H). The deploy writes the time into last-push.json
+// (.github/workflows/pages.yml). Until it arrives, or if it can't be read, the clock stays a clock.
+let pushed = 0;
+const countsUp = () => IN_NZ && pushed > 0;
+if (IN_NZ) {
+  fetch("/last-push.json", { cache: "no-cache" })
+    .then((res) => (res.ok ? res.json() : null))
+    .then((data) => { pushed = Date.parse(data?.at) || 0; if (pushed) render(); })
+    .catch(() => { /* no file yet: Auckland time it is */ });
+}
 const plural = (n, word) => `${n} ${word}${n === 1 ? "" : "s"}`;
 function drawSince(now) {
-  const mins = Math.max(0, Math.floor((now - deployed) / 60_000));
+  const mins = Math.max(0, Math.floor((now - pushed) / 60_000));
   const h = Math.floor(mins / 60);
   if (h < 100) {
     draw(String(h).padStart(2, " ") + pad(mins % 60), "H", "M",
@@ -286,7 +290,7 @@ function render() {
   if (box) {
     // Live time only: a scrubbed hour shouldn't show today's temperature
     const temp = temperature === null || scrubbing ? "" : `, ${Math.round(temperature)}°C`;
-    if (countsUp && !shift) {
+    if (countsUp() && !shift) {
       drawSince(Date.now());
       labelEl.textContent = "Since my last git commit";
     } else {
@@ -297,7 +301,7 @@ function render() {
       ? `${say(now.getHours(), now.getMinutes())} where you are`
       : inWords(apart) + (temperature === null || !fahrenheit
         ? "" : `\n${Math.round(temperature)}°C is ${Math.round(temperature * 9 / 5 + 32)}°F to you`);
-    if (countsUp && !shift) diffEl.textContent = ""; // the label above says it all
+    if (countsUp() && !shift) diffEl.textContent = ""; // the label above says it all
     // Lines past the first, so the narrow layout can make room for them (site.css)
     root.style.setProperty("--diff-extra", diffEl.textContent.split("\n").length - 1);
     box.hidden = false;
