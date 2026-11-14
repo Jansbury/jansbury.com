@@ -256,15 +256,16 @@ function setHands(now) {
   turn("hr", ((now.getHours() % 12) + now.getMinutes() / 60) * 30);
   turn("mn", now.getMinutes() * 6);
 }
-// Point at the target (or tap it) and the hands swing round to 4:20 until you move away (or tap
-// again, or tap elsewhere). The seconds hand keeps going.
+// Point at the target (or tap it) and the hands swing round to 4:20, and the dot grid scrolls
+// "somewhere" across, until you move away (or tap again, or tap elsewhere). The seconds hand keeps going.
 const face = document.querySelector(".target");
 let fourTwenty = false;
 function showFourTwenty(on) {
   if (on === fourTwenty) return;
   fourTwenty = on;
-  if (on) { turn("hr", 4 * 30 + 10); turn("mn", 20 * 6); }
-  else setHands(new Date(Date.now() + shift));
+  const grid = document.querySelector(".dots");
+  if (on) { turn("hr", 4 * 30 + 10); turn("mn", 20 * 6); grid?.dispatchEvent(new CustomEvent("scroll-word", { detail: "somewhere" })); }
+  else { setHands(new Date(Date.now() + shift)); grid?.dispatchEvent(new Event("stop-word")); }
 }
 if (face) {
   face.addEventListener("pointerenter", (e) => { if (e.pointerType === "mouse") showFourTwenty(true); });
@@ -419,3 +420,10 @@ if (handle) {
 }
 
 // Still here? The seconds hand has been going round the whole time you've been reading.
+
+// Pointing at the digital time spells out what it is on the dot grid
+if (timeEl) {
+  const grid = document.querySelector(".dots");
+  timeEl.addEventListener("pointerenter", (e) => { if (e.pointerType === "mouse") grid?.dispatchEvent(new CustomEvent("scroll-word", { detail: "my local time" })); });
+  timeEl.addEventListener("pointerleave", (e) => { if (e.pointerType === "mouse") grid?.dispatchEvent(new Event("stop-word")); });
+}

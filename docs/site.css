@@ -116,7 +116,7 @@ button { -webkit-tap-highlight-color: transparent; }
 .time__s { display: block; } /* what Jans is up to, on its own line above the place */
 /* Dot-matrix digits (clock.js builds them): 5x7 cells, one em tall */
 /* The digits end on the same right edge as the lines above and below; am/pm hangs just outside it */
-.time__v { font-size: var(--tv); line-height: 1; margin-block: .15em; }
+.time__v { font-size: var(--tv); line-height: 1; margin-block: .15em; pointer-events: auto; /* point at it to spell "my local time" (clock.js) */ }
 .dm { display: flex; justify-content: flex-end; gap: .16em; height: 1em; }
 .dm i { display: grid; grid-template-columns: repeat(5, 1fr); grid-template-rows: repeat(7, 1fr); width: .714em; }
 .dm i.colon { grid-template-columns: 1fr; width: .143em; }
@@ -361,6 +361,7 @@ html.is-scrubbing .hand--m, html.is-scrubbing .hand--h { transition: none; } /* 
 }
 .dots.is-spelling b { scale: .36; opacity: .22; }
 .dots.is-spelling b.on { scale: .86; opacity: 1; }
+.dots.is-scrolling b { transition-duration: 70ms; transition-delay: 0ms; } /* a scrolling word steps, no wave */
 @media (prefers-reduced-motion: reduce) { .dots b { transition: none; } }
 
 /* The vertical rule is a day bar: dashed track, solid fill up to now in Auckland */
