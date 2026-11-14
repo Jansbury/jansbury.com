@@ -52,7 +52,8 @@ function knock() {
 const LINES = [
   ["designs", "UI_s_\u00a0*&* UX flows"],
   ["builds", "Software\u00a0*&* tools"],
-  ["solves", "Hard problems"],
+  ["solves", "Complex problems"],
+  ["develops", "Brand identities"],
   ["automates", "The boring jobs"],
   ["makes", "Stuff\u00a0*&* things"],
 ];

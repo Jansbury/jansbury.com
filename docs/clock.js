@@ -30,13 +30,15 @@ const still = matchMedia("(prefers-reduced-motion: reduce)");
 const pad = (n) => String(n).padStart(2, "0");
 
 // The visitor's city, hung under the target whose hands show their time:
-// "Europe/London" -> "london", "America/Los_Angeles" -> "los angeles".
+// "Europe/London" -> "you in london", "America/Los_Angeles" -> "you in los angeles". In NZ the
+// target and the digits agree, so it's just the city.
 // Zones with no city in them ("UTC", "Etc/GMT+5") get no label.
 const RENAMED = { calcutta: "kolkata", saigon: "ho chi minh", kiev: "kyiv", rangoon: "yangon", katmandu: "kathmandu" };
 const zone = Intl.DateTimeFormat().resolvedOptions().timeZone ?? "";
 if (hereEl && zone.includes("/") && !zone.startsWith("Etc/")) {
   const raw = zone.split("/").pop().replace(/_/g, " ").toLowerCase();
-  const name = RENAMED[raw] ?? raw;
+  const city = RENAMED[raw] ?? raw;
+  const name = ["Pacific/Auckland", "NZ", "Antarctica/McMurdo"].includes(zone) ? city : `you in ${city}`;
   hereEl.textContent = name;
   hereEl.style.setProperty("--n", name.length); // site.css tightens the spacing for long names
 }
