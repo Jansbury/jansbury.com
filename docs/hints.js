@@ -4,7 +4,7 @@
 // Never with reduced motion, and nothing ticks while the tab is hidden.
 const CONTACT_EVERY = 5000; // ms between ripples
 const CONTACT_FIRST = 2500; // ms after load, once the page has assembled
-const RIPPLE = 1100;        // ms: long enough for the ripple in site.css to cross the line
+const RIPPLE = 1400;        // ms: long enough for the ripple in site.css to cross the line
 const DOTS_EVERY = 20_000;  // ms between pictures
 const DOTS_HOLD = 1800;     // ms a picture stays
 
