@@ -423,7 +423,7 @@ html.is-scrubbing .rule--v::after { left: -9px; width: 19px; }
   from { clip-path: polygon(0 0, 0 0, -12% 100%, -12% 100%); }
   to   { clip-path: polygon(0 0, 112% 0, 100% 100%, -12% 100%); }
 }
-@keyframes wipe   { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(-10% -2% -10% 0); } }
+@keyframes wipe   { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(-10% -50% -10% 0); } } /* ends well past the box, so a wide word is never cut */
 /* The smooth pair for headline changes. They reach past the box so the offset print isn't cut. */
 @keyframes wipe-in  { from { clip-path: inset(-10% 104% -10% -4%); } to { clip-path: inset(-10% -4% -10% -4%); } }
 @keyframes wipe-out { from { clip-path: inset(-10% -4% -10% -4%); } to { clip-path: inset(-10% -4% -10% 104%); } }

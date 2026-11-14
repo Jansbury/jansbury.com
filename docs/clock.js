@@ -157,9 +157,12 @@ const drawTime = (h, m) =>
 // Jans last pushed code, to any of his repos: hours and minutes (H M beside the digits), and past
 // 99 hours, days and hours (D H). The deploy writes the time into last-push.json
 // (.github/workflows/pages.yml). Until it arrives, or if it can't be read, the clock stays a clock.
+// Overseas visitors need the clock, so for them the count is a hidden extra: hover the time, or tap it
+// on a touch screen (a second tap brings the time back).
 let pushed = 0;
-const countsUp = () => IN_NZ && pushed > 0;
-if (IN_NZ) {
+let peeking = false;
+const countsUp = () => (IN_NZ || peeking) && pushed > 0;
+{
   fetch("/last-push.json", { cache: "no-cache" })
     .then((res) => (res.ok ? res.json() : null))
     .then((data) => { pushed = Date.parse(data?.at) || 0; if (pushed) render(); })
@@ -337,8 +340,11 @@ function render() {
       ? `${say(now.getHours(), now.getMinutes())} where you are`
       : inWords(apart) + (temperature === null || !fahrenheit
         ? "" : `\n${Math.round(temperature)}°C is ${Math.round(temperature * 9 / 5 + 32)}°F to you`);
-    if (counting) diffEl.textContent = "Since my last git commit"; // says what the digits count
-    diffEl.classList.toggle("is-note", counting); // set like the place line above (site.css)
+    if (counting && IN_NZ) diffEl.textContent = "Since my last git commit"; // says what the digits count
+    // Overseas the count is a peek, so its caption keeps the usual line's type and number of lines:
+    // the clock doesn't jump as it swaps
+    else if (counting) diffEl.textContent = "Since my last git commit" + "\n\u00a0".repeat(diffEl.textContent.split("\n").length - 1);
+    diffEl.classList.toggle("is-note", counting && IN_NZ); // set like the place line above (site.css)
     // Lines past the first, so the narrow layout can make room for them (site.css)
     root.style.setProperty("--diff-extra", diffEl.textContent.split("\n").length - 1);
     box.hidden = false;
@@ -426,6 +432,12 @@ if (handle) {
 // Pointing at the digital time spells out what it is on the dot grid
 if (timeEl) {
   const grid = document.querySelector(".dots");
-  timeEl.addEventListener("pointerenter", (e) => { if (e.pointerType === "mouse") grid?.dispatchEvent(new CustomEvent("scroll-word", { detail: "my local time" })); });
-  timeEl.addEventListener("pointerleave", (e) => { if (e.pointerType === "mouse") grid?.dispatchEvent(new Event("stop-word")); });
+  // Overseas, the digits also swap to the commit count while pointed at; on touch, a tap swaps them
+  // and a second tap (or one anywhere else) brings the time back
+  const word = IN_NZ ? "my local time" : "my last commit";
+  const peek = (on) => { if (IN_NZ || peeking === on) return; peeking = on; render(); };
+  timeEl.addEventListener("pointerenter", (e) => { if (e.pointerType === "mouse") { peek(true); grid?.dispatchEvent(new CustomEvent("scroll-word", { detail: word })); } });
+  timeEl.addEventListener("pointerleave", (e) => { if (e.pointerType === "mouse") { peek(false); grid?.dispatchEvent(new Event("stop-word")); } });
+  timeEl.addEventListener("pointerup", (e) => { if (e.pointerType !== "mouse") peek(!peeking); });
+  document.addEventListener("pointerdown", (e) => { if (e.pointerType !== "mouse" && !timeEl.contains(e.target)) peek(false); });
 }

@@ -55,6 +55,7 @@ const LINES = [
   ["solves", "Complex problems"],
   ["develops", "Brand identities"],
   ["automates", "The boring jobs"],
+  ["tinkers", "With Arduinos"],
   ["makes", "Stuff\u00a0*&* things"],
 ];
 const LINE_KEY = "jansbury-last-line";
@@ -64,7 +65,20 @@ let line = 0;
 let caps = Math.random() < .5;
 
 const WIPE_OUT = 200; // ms; matches the wipe-out animation in site.css
+const WIPE_IN = 800;  // ms; the longer wipe-in (640ms after an 80ms delay) has finished by then
 let swap = 0;
+
+// A long word can't wrap, so a line that would run off a narrow screen ("Brand identities") comes
+// down a size until it fits; every other line keeps the size the layout gives it
+function fit() {
+  const what = document.querySelector("[data-what]");
+  if (!what) return;
+  what.style.fontSize = "";
+  const over = what.scrollWidth / what.clientWidth;
+  if (over > 1) what.style.fontSize = `${(1 / over).toFixed(3)}em`;
+}
+addEventListener("resize", fit);
+document.fonts?.ready.then(fit); // measured again once the display face has loaded
 
 function setLine(n, wipe = false) {
   line = n;
@@ -86,6 +100,7 @@ function setLine(n, wipe = false) {
       if (i % 2) return [wrap("em", part)];
       return part.split("_").map((bit, j) => (j % 2 ? wrap("span", bit, "lc") : bit));
     }));
+    fit();
   };
   clearTimeout(swap);
   if (!wipe) {
@@ -108,6 +123,11 @@ function setLine(n, wipe = false) {
     for (const el of [does, what]) {
       el.classList.replace("is-leaving", "is-reprint");
     }
+    // Once the words are in, drop the wipe and its clip. Phones can leave a wipe stalled part way
+    // (a backgrounded tab, a scroll), which cut the headline off mid-word ("Brand identi")
+    swap = setTimeout(() => {
+      for (const el of [does, what]) if (el.classList.contains("is-reprint")) el.classList.replace("is-reprint", "is-set");
+    }, WIPE_IN);
   }, WIPE_OUT);
 }
 

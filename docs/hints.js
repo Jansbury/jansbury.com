@@ -1,6 +1,6 @@
 // Small hints that the page can be played with.
 // The line under the logo opens to ask "get in touch?" every few seconds, then folds back, until the
-// visitor does anything (touches, clicks, presses a key or points at it). When nobody's playing with it, the dot grid draws its next picture every few seconds.
+// visitor points at, taps or tabs to it. When nobody's playing with it, the dot grid draws its next picture every few seconds.
 // Never with reduced motion, and nothing ticks while the tab is hidden.
 const CONTACT_EVERY = 11_600; // ms between peeks: 8.8s hidden between each
 const CONTACT_FIRST = 2500; // ms after load, once the page has assembled
@@ -41,15 +41,17 @@ if (sign) {
   const stop = every(CONTACT_EVERY, CONTACT_FIRST, () => {
     sign.dispatchEvent(new CustomEvent("peek", { detail: PEEK }));
   });
+  // It keeps asking while people scroll and play with the rest of the page; it stops once they've
+  // pointed at, tapped or tabbed to the line itself
   const done = () => {
     stop();
-    removeEventListener("pointerdown", done, true);
-    removeEventListener("keydown", done, true);
     sign.removeEventListener("pointerenter", done);
+    sign.removeEventListener("pointerdown", done);
+    sign.removeEventListener("focusin", done);
   };
-  addEventListener("pointerdown", done, true);
-  addEventListener("keydown", done, true);
   sign.addEventListener("pointerenter", done);
+  sign.addEventListener("pointerdown", done);
+  sign.addEventListener("focusin", done);
 }
 
 if (dots) {
