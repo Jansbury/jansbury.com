@@ -383,3 +383,5 @@ if (handle) {
   });
   handle.addEventListener("blur", release);
 }
+
+// Still here? The seconds hand has been going round the whole time you've been reading.

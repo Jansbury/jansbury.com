@@ -551,3 +551,5 @@ html.is-scrubbing .rule--v::after { left: -9px; width: 19px; }
 @media (min-width: 1800px) { html { font-size: 125%; } }
 /* ...but not when the window is short: there isn't the height for larger type */
 @media (min-width: 1800px) and (max-height: 760px) { html { font-size: 100%; } }
+
+/* Still reading the stylesheet? Respect. Every colour above is one of five, and the squares at the top right cycle them. */
