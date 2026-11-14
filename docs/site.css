@@ -507,7 +507,7 @@ html.is-scrubbing .rule--v::after { left: -9px; width: 19px; }
 @media (min-width: 700px) and (min-height: 760px) and (max-aspect-ratio: 6/5) {
   .home {
     --fs: min(15.5vw, 10.5svh); --top: 12%; --dots: clamp(3.6rem, 5.4vw, 6.6rem);
-    --tr: calc(var(--rail) + var(--dots) + clamp(1.5rem, 4vw, 4rem)); --tt: var(--top);
+    --tr: var(--rail); --tt: var(--top); /* the target sits right, over the clock */
     --rail: calc(var(--gutter) + var(--pip) + clamp(1.5rem, 3vw, 3rem)); /* the dots and clock stand well clear of the day bar */
     /* The target takes the height the copy leaves under the top margin
        (3.6: four headline lines; 11rem: the sentence and the gaps either side of the headline) */
@@ -519,7 +519,8 @@ html.is-scrubbing .rule--v::after { left: -9px; width: 19px; }
      sentence's, and the day bar runs from the top of the target down to it. */
   .pips { right: calc(var(--gutter) + var(--pip) / 2 - 22px); width: 44px; padding-inline: 0; }
   .rule--v { right: calc(var(--gutter) + var(--pip) / 2 - var(--hair) / 2); top: max(var(--top), var(--bar-clear)); bottom: var(--gutter); height: auto; }
-  .dots { width: var(--dots); top: calc(var(--top) + var(--tg) * .62); right: calc(var(--rail) - var(--dots) * .019); }
+  /* The dots take the open space to the target's left, level with its centre */
+  .dots { width: var(--dots); top: calc(var(--top) + var(--tg) / 2 - var(--dots) / 2); right: calc(var(--rail) + var(--tg) + clamp(1.5rem, 4vw, 4rem)); }
   .time { right: var(--rail); bottom: var(--gutter); }
   .blurb { max-width: min(58ch, calc(100vw - var(--gutter) - var(--rail) - 14rem)); } /* short of the clock */
   .vert { display: none; }
