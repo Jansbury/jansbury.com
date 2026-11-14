@@ -203,6 +203,9 @@ button { -webkit-tap-highlight-color: transparent; }
 }
 .is-open .sign__word b { translate: calc(var(--x) * var(--p)) calc(var(--y) * var(--p)); scale: .85; }
 .is-open .sign__word:hover b, .is-open .sign__word:focus-visible b { scale: 1.1; }
+/* hints.js: the resting line ripples, left to right */
+.sign.is-hinting:not(.is-open) .sign__word b { animation: ripple 520ms var(--ease) calc(var(--rx) * 14ms); }
+@keyframes ripple { 45% { scale: 1; } }
 @media (prefers-reduced-motion: reduce) {
   .sign__word b { transition: none; }
 }
@@ -236,6 +239,7 @@ button { -webkit-tap-highlight-color: transparent; }
 .pips b { display: block; width: var(--pip); aspect-ratio: 1; background: var(--ink); transition: rotate var(--t) var(--ease); }
 .pips:focus-visible b:nth-child(2) { rotate: 45deg; }
 @media (hover: hover) { .pips:hover b:nth-child(2) { rotate: 45deg; } }
+.pips.is-hinting b:nth-child(2) { rotate: 45deg; } /* hints.js: the one-time demo */
 
 /* The brand's target mark, in the site palette */
 .target {
@@ -315,9 +319,9 @@ button { -webkit-tap-highlight-color: transparent; }
 .hours b:nth-child(3) { top: 50%; }
 .hours b:nth-child(4) { top: 75%; }
 .hours b:nth-child(5) { top: 100%; }
-html.is-scrubbing .hours b { opacity: 1; }
+html.is-scrubbing .hours b, .rule--v.is-hinting .hours b { opacity: 1; }
 @media (hover: hover) { .rule--v:has(.scrub:hover) .hours b { opacity: 1; } }
-html.is-scrubbing .rule--v::after { left: -9px; width: 19px; }
+html.is-scrubbing .rule--v::after, .rule--v.is-hinting::after { left: -9px; width: 19px; }
 
 /* ---------- Assembly on load: hard cuts, in reading order ---------- */
 @media (prefers-reduced-motion: no-preference) {
