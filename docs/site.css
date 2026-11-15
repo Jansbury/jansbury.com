@@ -34,8 +34,7 @@
   /* The clock's three lines, and so its height, for layouts that hang things from it */
   --tk: clamp(.8rem, .7rem + .3vw, 1.1rem);
   --tv: clamp(2.4rem, 4.2vw, 6rem);
-  --td: clamp(1rem, .85rem + .5vw, 1.6rem);
-  --time-h: calc(var(--tk) * 1.45 * (1 + var(--k-extra, 0)) + var(--tv) * 1.3 + var(--td) * 1.2 * (1 + var(--diff-extra, 0)));
+  --time-h: calc(var(--tk) * 1.45 * (1 + var(--k-extra, 0)) + var(--tv) * 1.3 + var(--tk) * 1.45 * (1 + var(--diff-extra, 0)));
   /* The inner right-hand line in the bespoke narrow and tall layouts: the clock, the dots
      and the target all end on it, a step in from the day bar */
   --rail: calc(var(--gutter) + var(--pip) + .75rem);
@@ -128,8 +127,7 @@ button { -webkit-tap-highlight-color: transparent; }
 .dm .dm__ap i { width: .15em; height: .21em; }
 .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 @media (prefers-reduced-motion: reduce) { .dm b { transition: none; } }
-.time__diff { font-family: var(--serif); font-style: italic; font-size: var(--td); line-height: 1.2; white-space: pre-line; }
-.time__diff.is-note { font-family: var(--sans); font-style: normal; font-size: var(--tk); line-height: 1.45; } /* the commit clock's caption matches the place line */
+.time__diff { font-family: var(--sans); font-size: var(--tk); line-height: 1.45; min-height: 1.45em; white-space: pre-line; } /* the same type as the place line above, whatever it says */
 
 /* Headline: upright caps, italic connectives */
 .line {
@@ -328,11 +326,12 @@ button { -webkit-tap-highlight-color: transparent; }
 /* The hour and minute hands overshoot a touch and settle, the hour hand a beat behind */
 .hand--m { transition: rotate 650ms cubic-bezier(.3, 1.7, .5, 1); }
 .hand--h { transition: rotate 800ms cubic-bezier(.3, 1.5, .5, 1) 70ms; }
-html.is-scrubbing .hand--m, html.is-scrubbing .hand--h { transition: none; } /* dragging: they follow at once */
+html.is-scrubbing .hand--m, html.is-scrubbing .hand--h, html.is-easing .hand--m, html.is-easing .hand--h { transition: none; } /* dragging and gliding back: they follow at once */
 @media (prefers-reduced-motion: reduce) { .hand--m, .hand--h { transition: none; } }
 @media (prefers-reduced-motion: reduce) { .hand--s { animation-timing-function: steps(60); } }
 
 /* The visitor's city hangs under the target, whose hands show their time */
+.vert.is-crowded { visibility: hidden; }
 .vert {
   right: calc(var(--tr) + var(--tg) / 2 - .5ch);
   top: calc(var(--tt) + var(--tg) + 2.5rem);
@@ -442,7 +441,7 @@ html.is-scrubbing .rule--v::after { left: -9px; width: 19px; }
     --tg-max: min(60vw, calc(100vw - var(--rail) - var(--gutter) - 5.6rem));
   }
   .line { font-size: 11.8vw; } /* the longest headline, "Software & tools", just fits at this size */
-  .copy { margin-top: calc(var(--tg) + 9.1rem + var(--td) * 1.2 * var(--diff-extra, 0) + var(--tk) * 1.45 * var(--k-extra, 0) + var(--slack, 0px) * .35); } /* more lines under the clock push the copy down */
+  .copy { margin-top: calc(var(--tg) + 9.1rem + var(--tk) * 1.45 * var(--diff-extra, 0) + var(--tk) * 1.45 * var(--k-extra, 0) + var(--slack, 0px) * .35); } /* more lines under the clock push the copy down */
   .blurb { max-width: 58ch; }
   /* Two lines on the right: the squares and the day bar share the outer one, with the squares'
      edge on the margin; the target and the clock end on the inner one. The day bar runs

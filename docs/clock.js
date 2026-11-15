@@ -11,10 +11,10 @@ const ZONE = "Pacific/Auckland";
 const NIGHT_FROM = 23;  // Auckland counts as asleep from 23:00...
 const NIGHT_UNTIL = 7;  // ...until 07:00
 const DAY = 1440;       // minutes
-const DRAG_STEP = 5;    // minutes per step when dragging
+const DRAG_STEP = 15;   // minutes per step when dragging: quarter hours, as the line under the clock counts
 const KEY_STEP = 15;    // minutes per arrow key
 const LAST = DAY - DRAG_STEP; // the bar stops at 23:55, so the bottom never wraps round to midnight
-const EASE_BACK = 600;  // ms to return to now after letting go
+const EASE_BACK = 1400; // ms to return to now after letting go
 const PLATE_BASE = 4;   // plate units off register for a visitor in Auckland's own time
 const PLATE_PER_HOUR = 0.5;
 
@@ -223,7 +223,8 @@ const US_ZONE = /^(America\/(New_York|Chicago|Denver|Los_Angeles|Phoenix|Anchora
 const region = (navigator.languages ?? [navigator.language])
   .map((tag) => { try { return new Intl.Locale(tag).region; } catch { return undefined; } })
   .find(Boolean);
-const fahrenheit = region ? FAHRENHEIT.has(region) : US_ZONE.test(zone);
+// Someone in New Zealand lives in °C, whatever language their browser is set to
+const fahrenheit = !IN_NZ && (region ? FAHRENHEIT.has(region) : US_ZONE.test(zone));
 async function checkWeather() {
   if (Date.now() < weather.next) return;
   keep(Date.now() + WEATHER_TIMEOUT + 2000); // claim this request, so other tabs and reloads wait for it
@@ -334,7 +335,7 @@ function render() {
   }
   if (box) {
     // Live time only: a scrubbed hour shouldn't show today's temperature
-    const temp = temperature === null || scrubbing ? "" : `, ${Math.round(temperature)}°C`;
+    const temp = temperature === null || shift ? "" : `, ${Math.round(temperature)}°C`;
     const counting = countsUp() && !shift;
     if (counting) drawSince(Date.now());
     else drawTime(a.h, a.m);
@@ -346,7 +347,7 @@ function render() {
     root.style.setProperty("--k-extra", status ? 1 : 0); // the extra line, so the layouts make room (site.css)
     // While the slider is away from now, the line says how far it has gone, and for visitors
     // elsewhere what time that is for them, on one line so the clock doesn't jump, so a dragged clock always reads as "later" or "earlier"
-    diffEl.textContent = scrubbing
+    diffEl.textContent = shift
       ? away(shift) + (apart.offset !== 0 ? `, ${say(now.getHours(), now.getMinutes())} for you` : "")
       : inWords(apart) + (temperature === null || !fahrenheit
         ? "" : `\n${Math.round(temperature)}°C is ${Math.round(temperature * 9 / 5 + 32)}°F to you`);
@@ -354,7 +355,6 @@ function render() {
     // Overseas the count is a peek, so its caption keeps the usual line's type and number of lines:
     // the clock doesn't jump as it swaps
     else if (counting) diffEl.textContent = "Since my last git commit" + "\n\u00a0".repeat(diffEl.textContent.split("\n").length - 1);
-    diffEl.classList.toggle("is-note", counting && IN_NZ); // set like the place line above (site.css)
     // Lines past the first, so the narrow layout can make room for them (site.css)
     root.style.setProperty("--diff-extra", diffEl.textContent.split("\n").length - 1);
     box.hidden = false;
@@ -395,17 +395,16 @@ function release() {
   scrubbing = false;
   root.classList.remove("is-scrubbing");
   if (still.matches) { shift = 0; render(); return; }
-  // The hands spring straight back to now; the rest of the clock eases after them
-  setHands(new Date());
-  handsHeld = true;
+  // The whole clock, hands and digits together, glides back to now: slow at both ends
+  root.classList.add("is-easing");
   const from = shift;
   const start = performance.now();
   const step = (t) => {
     const k = Math.min(1, (t - start) / EASE_BACK);
-    shift = from * (1 - k) ** 3;
-    if (k === 1) handsHeld = false;
+    shift = from * (1 - (k < .5 ? 4 * k ** 3 : 1 - (-2 * k + 2) ** 3 / 2));
     render();
     if (k < 1) easing = requestAnimationFrame(step);
+    else root.classList.remove("is-easing");
   };
   easing = requestAnimationFrame(step);
 }
@@ -450,4 +449,22 @@ if (timeEl) {
   timeEl.addEventListener("pointerleave", (e) => { if (e.pointerType === "mouse") { peek(false); grid?.dispatchEvent(new Event("stop-word")); } });
   timeEl.addEventListener("pointerup", (e) => { if (e.pointerType !== "mouse") peek(!peeking); });
   document.addEventListener("pointerdown", (e) => { if (e.pointerType !== "mouse" && !timeEl.contains(e.target)) peek(false); });
+}
+
+// The city name hangs under the target; where a long headline reaches it, it steps aside
+const vertEl = document.querySelector(".vert");
+const headline = document.querySelector(".line");
+if (vertEl && headline && "ResizeObserver" in window) {
+  const clear = () => {
+    vertEl.classList.remove("is-crowded");
+    const a = vertEl.getBoundingClientRect(), b = headline.getBoundingClientRect();
+    const words = [...headline.querySelectorAll(".l")].some((el) => {
+      const r = document.createRange(); r.selectNodeContents(el);
+      return [...r.getClientRects()].some((c) => c.right > a.left && c.left < a.right && c.bottom > a.top && c.top < a.bottom);
+    });
+    vertEl.classList.toggle("is-crowded", words && b.width > 0);
+  };
+  new ResizeObserver(clear).observe(headline);
+  new MutationObserver(clear).observe(headline, { childList: true, subtree: true, characterData: true });
+  addEventListener("resize", clear);
 }
